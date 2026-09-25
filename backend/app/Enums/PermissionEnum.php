@@ -57,4 +57,24 @@ enum PermissionEnum: string
     case CreateActivity = 'activities.create';
     case UpdateActivity = 'activities.update';
     case RecordActivityAttendance = 'activities.recordAttendance';
+
+    // Phase 4: expense categories (lookup)
+    case ViewAnyExpenseCategories = 'expense-categories.viewAny';
+    case ManageExpenseCategories = 'expense-categories.manage';
+
+    // Phase 4: expenses (who may act at each workflow step is governed by
+    // the step's role_required, not a permission — see docs/database-design.md §8)
+    case ViewAnyExpenses = 'expenses.viewAny';
+    case ViewExpense = 'expenses.view';
+    case CreateExpense = 'expenses.create';
+    case UpdateExpense = 'expenses.update';
+
+    // Phase 4: assets
+    case ViewAnyAssets = 'assets.viewAny';
+    case CreateAsset = 'assets.create';
+    case UpdateAsset = 'assets.update';
+    case AssignAsset = 'assets.assign';
+
+    // Phase 4: workflows (read-only visibility — see docs/database-design.md §8)
+    case ViewAnyWorkflows = 'workflows.viewAny';
 }

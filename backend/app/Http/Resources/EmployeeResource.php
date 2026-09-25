@@ -18,14 +18,14 @@ class EmployeeResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'user_id' => $this->user_id,
-            'department' => $this->whenLoaded('department', fn () => $this->department && [
+            'department' => $this->whenLoaded('department', fn () => $this->department ? [
                 'id' => $this->department->id,
                 'name' => $this->department->name,
-            ]),
-            'branch' => $this->whenLoaded('branch', fn () => $this->branch && [
+            ] : null),
+            'branch' => $this->whenLoaded('branch', fn () => $this->branch ? [
                 'id' => $this->branch->id,
                 'name' => $this->branch->name,
-            ]),
+            ] : null),
             'position' => $this->position,
             'joining_date' => $this->joining_date,
             'status' => $this->status,

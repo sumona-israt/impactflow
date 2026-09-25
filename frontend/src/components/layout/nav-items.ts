@@ -40,7 +40,12 @@ export const NAV_ITEMS: NavItem[] = [
     icon: UserRound,
     requiresAnyPermission: ["employees.viewAny", "volunteers.viewAny"],
   },
-  { label: "Finance & Assets", href: "/finance", icon: Banknote, plannedForPhase: 4 },
+  {
+    label: "Finance & Assets",
+    href: "/finance",
+    icon: Banknote,
+    requiresAnyPermission: ["expenses.viewAny", "assets.viewAny"],
+  },
   { label: "Data Quality", href: "/data-quality", icon: Database, plannedForPhase: 5 },
   { label: "Odoo Integration", href: "/odoo", icon: Plug, plannedForPhase: 7 },
   {

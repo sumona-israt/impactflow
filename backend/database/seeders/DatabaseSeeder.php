@@ -22,6 +22,8 @@ class DatabaseSeeder extends Seeder
             DepartmentSeeder::class,
             BranchSeeder::class,
             ProgramCategorySeeder::class,
+            ExpenseCategorySeeder::class,
+            ApprovalWorkflowSeeder::class,
         ]);
     }
 }

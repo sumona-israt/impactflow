@@ -35,11 +35,15 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
     await ensureCsrfCookie();
   }
 
+  const isFormData = options.body instanceof FormData;
+
   const headers: Record<string, string> = {
     Accept: "application/json",
   };
 
-  if (options.body !== undefined) {
+  // FormData (file uploads) must NOT get a manual Content-Type — the browser
+  // sets one with the correct multipart boundary itself.
+  if (options.body !== undefined && !isFormData) {
     headers["Content-Type"] = "application/json";
   }
 
@@ -52,7 +56,7 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
     method,
     headers,
     credentials: "include",
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    body: isFormData ? (options.body as FormData) : options.body !== undefined ? JSON.stringify(options.body) : undefined,
   });
 
   if (!response.ok) {

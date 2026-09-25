@@ -67,29 +67,39 @@ Only demo-appropriate fields are collected; no fields beyond what's listed in th
 
 **Simplified vs. the original design:** `activity_attendance` only tracks beneficiaries in Phase 3, not the originally-designed nullable triple-FK (beneficiary/employee/volunteer) — every demo scenario and dashboard chart in the product brief (§8, §58) talks about beneficiary activity participation specifically; staff/volunteer attendance isn't asked for anywhere. The schema can grow the other two nullable FKs later without breaking this table if that changes.
 
-## 7. Finance & assets — Phase 4 ⏳
+## 7. Finance & assets — Phase 4 ✅
 
 | Table | Key columns |
 |---|---|
-| `expense_categories` | `id, name` |
-| `expenses` | `id (uuid), program_id, category_id, submitted_by, amount, currency, expense_date, description, status, approver_id, odoo_reference` |
-| `expense_attachments` | `id, expense_id, file_path, uploaded_by` |
+| `expense_categories` | `id, name` — lookup table, seeded with real categories |
+| `expenses` | `id (uuid), program_id, category_id, submitted_by, amount, currency, expense_date, description, status, created_by` |
+| `expense_attachments` | `id, expense_id, file_path, original_name, mime_type, size, uploaded_by` — stored on a private disk, served only through an authenticated download route (see §12 and the Odoo-integration-style "no predictable public URLs" rule in the product brief §38) |
 | `assets` | `id (uuid), name, category, serial_number, purchase_date, purchase_value, location, condition, status` |
 | `asset_assignments` | `id, asset_id, assigned_to -> users, assigned_at, returned_at` |
-| `program_budgets` | `id, program_id, fiscal_year, allocated_amount, currency` — moved here from §3; per-fiscal-year budget tracking is a finance concern and belongs alongside expense/budget-utilization reporting, if it turns out to be needed beyond `programs.budget` |
 
-`expenses.status`: `draft, submitted, program_review, finance_review, approved, rejected, odoo_synced`.
+`expenses.status`: `draft, program_review, finance_review, approved, rejected`. `odoo_synced` is added in Phase 7 once the sync that would actually set it exists — an unused status value today would be dead code.
 
-## 8. Approval workflow engine — Phase 4 ⏳
+**Simplified vs. the original design:**
+- `submitted` is dropped as a distinct resting status — submitting an expense starts the approval workflow immediately, landing it in `program_review` in the same request, so there's no observable moment where "submitted" would differ from "program_review".
+- `approver_id` (a single FK) is dropped — a two-step workflow has two approvers, and `workflow_actions` (see §8) already records who acted at each step with a timestamp and comment. A second, single-value column would just duplicate (and could drift from) that history.
+- `program_budgets` (per-fiscal-year rows) stays deferred, not built in Phase 4 either: the budget-vs-actual check this phase implements (see §8) only needs `programs.budget` as a single ceiling, which already exists.
 
-Generic, reusable — not hardcoded per entity.
+## 8. Approval workflow engine — Phase 4 ✅
+
+Generic, reusable — not hardcoded per entity. Expense is the first (and, in Phase 4, only) consumer; Program's own status changes (Phase 3) deliberately stay a simple direct transition rather than being retrofitted onto this engine — see §3's reasoning. Nothing stops a later phase from moving Program onto it if a real multi-approver requirement appears there.
 
 | Table | Key columns |
 |---|---|
-| `approval_workflows` | `id, name, entity_type` (e.g. `Expense`, `Program`) |
-| `workflow_steps` | `id, workflow_id, sequence, role_required, name` |
-| `workflow_instances` | `id, workflow_id, entity_type, entity_id, current_step_id, status` |
-| `workflow_actions` | `id, workflow_instance_id, step_id, actor_id, action (approve/reject/return/request_changes/escalate), comment, created_at` |
+| `approval_workflows` | `id, name, entity_type` (e.g. `App\Models\Expense`) |
+| `workflow_steps` | `id, workflow_id, sequence, role_required, name` — `name` doubles as the entity status the workflow reports while parked on that step (e.g. step named `program_review` ⇒ `expenses.status = 'program_review'` while an instance sits there) |
+| `workflow_instances` | `id, workflow_id, entity_type, entity_id, current_step_id (null once terminal), status (in_progress/approved/rejected/returned)` |
+| `workflow_actions` | `id, workflow_instance_id, step_id, actor_id, action, comment, created_at` |
+
+**Decisions worth calling out:**
+- Definitions (`approval_workflows`/`workflow_steps`) are seeded, not admin-editable in Phase 4 — a workflow *designer* UI is a real feature but a separate one from the engine actually processing approvals correctly, and nothing in the product brief's demo scenarios exercises editing a workflow's steps. `GET /api/v1/workflows` exists for visibility; there's no create/update endpoint yet.
+- Action vocabulary is `approve | reject | return` — `request_changes` is functionally identical to `return` (send it back to the submitter with a comment) so it isn't a separate code path, and `escalate` (reassign to a different approver) is left out: it's a real feature but not one any current scenario needs, and building it well requires a "who do you escalate to" model this phase has no other use for.
+- `return` always sends the instance back to the submitter (`workflow_instances.status = 'returned'`, entity status back to `draft`) rather than to a specific prior step. Multi-hop step navigation adds real complexity; "fix it and resubmit" (which starts a fresh instance) is both simpler and closer to how this works in practice.
+- Budget-vs-actual enforcement (product brief §14: "prevent approval when appropriate budget rules are violated") is checked once, at the *final* approval step (Finance), against `programs.budget` minus already-approved expenses for that program — Finance is the budget gatekeeper per the product brief's role descriptions, so earlier steps don't duplicate the check.
 
 ## 9. Data management — Phase 5 ⏳
 

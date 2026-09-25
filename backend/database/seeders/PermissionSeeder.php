@@ -33,11 +33,16 @@ class PermissionSeeder extends Seeder
             PermissionEnum::UpdateActivity, PermissionEnum::RecordActivityAttendance,
             PermissionEnum::ViewAnyDepartments, PermissionEnum::ViewAnyBranches,
             PermissionEnum::ViewAnyProgramCategories,
+            // Reviews expenses as workflow step 1 (role_required, not a permission — §8)
+            PermissionEnum::ViewAnyExpenses, PermissionEnum::ViewExpense,
         ],
         RoleEnum::FinanceOfficer->value => [
             PermissionEnum::ViewAnyPrograms, PermissionEnum::ViewProgram,
             PermissionEnum::ViewAnyDepartments, PermissionEnum::ViewAnyBranches,
             PermissionEnum::ViewAnyProgramCategories,
+            PermissionEnum::ViewAnyExpenses, PermissionEnum::ViewExpense,
+            PermissionEnum::ViewAnyExpenseCategories, PermissionEnum::ManageExpenseCategories,
+            PermissionEnum::ViewAnyWorkflows, PermissionEnum::ViewAnyAssets,
         ],
         RoleEnum::FieldOfficer->value => [
             PermissionEnum::ViewAnyPrograms, PermissionEnum::ViewProgram,
@@ -47,18 +52,25 @@ class PermissionSeeder extends Seeder
             PermissionEnum::RecordActivityAttendance,
             PermissionEnum::ViewAnyDepartments, PermissionEnum::ViewAnyBranches,
             PermissionEnum::ViewAnyProgramCategories,
+            PermissionEnum::ViewAnyExpenses, PermissionEnum::ViewExpense,
+            PermissionEnum::CreateExpense, PermissionEnum::UpdateExpense,
+            PermissionEnum::ViewAnyExpenseCategories,
         ],
         RoleEnum::HrAdminOfficer->value => [
             PermissionEnum::ViewAnyEmployees, PermissionEnum::CreateEmployee, PermissionEnum::UpdateEmployee,
             PermissionEnum::ViewAnyVolunteers, PermissionEnum::CreateVolunteer, PermissionEnum::UpdateVolunteer,
             PermissionEnum::ViewAnyDepartments, PermissionEnum::ManageDepartments,
             PermissionEnum::ViewAnyBranches, PermissionEnum::ManageBranches,
+            PermissionEnum::ViewAnyAssets, PermissionEnum::CreateAsset,
+            PermissionEnum::UpdateAsset, PermissionEnum::AssignAsset,
         ],
         RoleEnum::Management->value => [
             PermissionEnum::ViewAnyPrograms, PermissionEnum::ViewProgram,
             PermissionEnum::ViewAnyBeneficiaries, PermissionEnum::ViewBeneficiary,
             PermissionEnum::ViewAnyDepartments, PermissionEnum::ViewAnyBranches,
             PermissionEnum::ViewAnyProgramCategories,
+            PermissionEnum::ViewAnyExpenses, PermissionEnum::ViewExpense,
+            PermissionEnum::ViewAnyAssets, PermissionEnum::ViewAnyWorkflows,
         ],
     ];
 

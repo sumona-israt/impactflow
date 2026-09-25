@@ -4,6 +4,8 @@ use App\Enums\ProgramStatus;
 use App\Enums\RoleEnum;
 use App\Models\AuditLog;
 use App\Models\Beneficiary;
+use App\Models\Branch;
+use App\Models\Organization;
 use App\Models\Program;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -36,6 +38,26 @@ test('a program manager can create a program and it is audited', function () {
         ->assertJsonPath('data.actual_beneficiaries', 0);
 
     expect(AuditLog::where('action', 'program.created')->exists())->toBeTrue();
+});
+
+test('a program with a manager and branch serializes them as objects, not booleans', function () {
+    // Regression test: whenLoaded()'s closure was written as
+    // `fn () => $this->manager && [...]`, which — because `&&` returns a
+    // bool, not its right operand — always serialized a present relation as
+    // `true` instead of `{id, name}`. whenLoaded() itself already returns
+    // null when the relation is absent, so this only broke the "present" case.
+    $organization = Organization::create(['name' => 'Test Org']);
+    $branch = Branch::create(['organization_id' => $organization->id, 'name' => 'Dhaka Office']);
+
+    $response = $this->actingAs($this->programManager)->postJson('/api/v1/programs', [
+        'name' => 'Program With Branch',
+        'start_date' => '2026-01-01',
+        'branch_id' => $branch->id,
+    ]);
+
+    $response->assertCreated()
+        ->assertJsonPath('data.branch.id', $branch->id)
+        ->assertJsonPath('data.branch.name', $branch->name);
 });
 
 test('a field officer cannot create a program', function () {

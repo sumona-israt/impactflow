@@ -64,11 +64,25 @@ All SuperAdmin-only today (via granular permissions, not a hardcoded role check 
 ### Activities — Phase 3 ✅
 `/api/v1/activities` (CRUD, scoped under a program), `/api/v1/activities/{id}/attendance` (record beneficiary attendance).
 
-### Expenses & assets — Phase 4 ⏳
-`/api/v1/expense-categories` (admin CRUD), `/api/v1/expenses` (CRUD + `/submit`, `/approve`, `/reject`), `/api/v1/assets` (CRUD + `/assign`, `/return`).
+### Expenses & assets — Phase 4 ✅
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/api/v1/expense-categories` | broadly readable lookup |
+| POST/PUT | `/api/v1/expense-categories(/{id})` | Finance Officer or Super Admin |
+| GET | `/api/v1/expenses` | list, `?q=`, `filter[status]`, `filter[program_id]` |
+| POST | `/api/v1/expenses` | create as `draft` |
+| GET/PUT | `/api/v1/expenses/{expense}` | view / update (draft only) |
+| POST | `/api/v1/expenses/{expense}/submit` | starts the approval workflow (see below) |
+| POST | `/api/v1/expenses/{expense}/attachments` | upload a receipt (multipart) |
+| GET | `/api/v1/expenses/{expense}/attachments/{attachment}/download` | authenticated, authorized stream — never a public URL |
+| GET | `/api/v1/assets` | list |
+| POST | `/api/v1/assets` | create |
+| PUT | `/api/v1/assets/{asset}` | update |
+| POST | `/api/v1/assets/{asset}/assign` | assign to a user |
+| POST | `/api/v1/assets/{asset}/return` | close the open assignment |
 
-### Workflows — Phase 4 ⏳
-`/api/v1/workflows` (admin config), `/api/v1/workflow-instances/{id}/actions` (approve/reject/return/request-changes/escalate).
+### Workflows — Phase 4 ✅
+`GET /api/v1/workflows` (read-only visibility into seeded workflow definitions — no create/update endpoint yet, see `docs/database-design.md` §8), `POST /api/v1/workflow-instances/{instance}/actions` (body: `{action: "approve"|"reject"|"return", comment?}` — generic, works for any entity implementing `App\Contracts\Workflowable`, not just Expense).
 
 ### Data quality & imports — Phase 5 ⏳
 `/api/v1/imports` (`POST` upload, `GET` history), `/api/v1/imports/{id}/mapping`, `/api/v1/imports/{id}/preview`, `/api/v1/imports/{id}/commit`, `/api/v1/data-quality/issues` (list/resolve/ignore), `/api/v1/data-quality/score`.

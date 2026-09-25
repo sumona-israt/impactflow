@@ -22,14 +22,14 @@ class ProgramResource extends JsonResource
                 'id' => $this->category->id,
                 'name' => $this->category->name,
             ]),
-            'manager' => $this->whenLoaded('manager', fn () => $this->manager && [
+            'manager' => $this->whenLoaded('manager', fn () => $this->manager ? [
                 'id' => $this->manager->id,
                 'name' => $this->manager->name,
-            ]),
-            'branch' => $this->whenLoaded('branch', fn () => $this->branch && [
+            ] : null),
+            'branch' => $this->whenLoaded('branch', fn () => $this->branch ? [
                 'id' => $this->branch->id,
                 'name' => $this->branch->name,
-            ]),
+            ] : null),
             'district' => $this->district,
             'upazila' => $this->upazila,
             'start_date' => $this->start_date,
