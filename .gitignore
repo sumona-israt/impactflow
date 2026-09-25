@@ -1,0 +1,43 @@
+# Backend (Laravel)
+backend/vendor/
+backend/node_modules/
+backend/.env
+backend/.env.*
+!backend/.env.example
+backend/storage/*.key
+backend/storage/app/*
+!backend/storage/app/.gitkeep
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/testing/*
+backend/storage/framework/views/*
+!backend/storage/framework/*/.gitkeep
+backend/storage/logs/*
+!backend/storage/logs/.gitkeep
+backend/bootstrap/cache/*.php
+backend/.phpunit.cache
+backend/.phpunit.result.cache
+
+# Frontend (Next.js)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+frontend/next-env.d.ts
+
+# Repo root (docker-compose variable substitution)
+/.env
+!/.env.example
+
+# General
+.DS_Store
+*.log
+.idea/
+.vscode/
+*.swp
+.claude/
+
+# Docker
+docker/**/data/
