@@ -106,6 +106,34 @@ jobs:
           docker compose logs
           exit 1
 
+      - name: Seed the database
+        run: docker compose exec -T laravel php artisan migrate --seed --force
+
+      # A health check alone would have missed the Phase 2 regression where
+      # authenticated Server Components silently redirected every logged-in
+      # user back to /login (Sanctum didn't recognize the server-to-server
+      # call as a stateful frontend request — see docs/architecture.md §3).
+      # This exercises the real cookie-session flow end-to-end through nginx.
+      - name: Smoke-test the authenticated dashboard flow
+        run: |
+          set -e
+          COOKIES=$(mktemp)
+          xsrf() { python3 -c "import urllib.parse,sys; print(urllib.parse.unquote(sys.argv[1]))" "$(grep XSRF-TOKEN "$COOKIES" | awk '{print $7}')"; }
+
+          curl -sf -c "$COOKIES" -b "$COOKIES" http://localhost/sanctum/csrf-cookie -o /dev/null
+
+          curl -sf -c "$COOKIES" -b "$COOKIES" -X POST http://localhost/api/v1/login \
+            -H "Content-Type: application/json" -H "Accept: application/json" \
+            -H "X-XSRF-TOKEN: $(xsrf)" -H "Referer: http://localhost/" \
+            -d '{"email":"admin@impactflow.test","password":"password"}' -o /dev/null
+
+          STATUS=$(curl -s -o /tmp/dashboard.html -w "%{http_code}" -b "$COOKIES" http://localhost/dashboard)
+          if [ "$STATUS" != "200" ] || grep -q "NEXT_REDIRECT" /tmp/dashboard.html; then
+            echo "Authenticated /dashboard did not render (status $STATUS)" >&2
+            cat /tmp/dashboard.html
+            exit 1
+          fi
+
       - name: Tear down
         if: always()
         run: docker compose down -v

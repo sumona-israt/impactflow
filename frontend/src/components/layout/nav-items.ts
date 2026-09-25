@@ -16,6 +16,8 @@ export interface NavItem {
   icon: LucideIcon;
   /** Undefined means the route is live today. */
   plannedForPhase?: number;
+  /** Item is hidden entirely unless the user has at least one of these permissions. */
+  requiresAnyPermission?: string[];
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -26,5 +28,10 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Finance & Assets", href: "/finance", icon: Banknote, plannedForPhase: 4 },
   { label: "Data Quality", href: "/data-quality", icon: Database, plannedForPhase: 5 },
   { label: "Odoo Integration", href: "/odoo", icon: Plug, plannedForPhase: 7 },
-  { label: "Administration", href: "/admin", icon: ShieldCheck, plannedForPhase: 2 },
+  {
+    label: "Administration",
+    href: "/admin/users",
+    icon: ShieldCheck,
+    requiresAnyPermission: ["users.viewAny", "roles.viewAny", "audit-logs.viewAny"],
+  },
 ];

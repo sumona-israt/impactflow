@@ -1,6 +1,6 @@
 import "server-only";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import type { AuthUser } from "@/types/auth";
 
 /**
@@ -27,10 +27,20 @@ export async function getServerAuth(): Promise<AuthUser | null> {
     return null;
   }
 
+  // Sanctum's EnsureFrontendRequestsAreStateful only authenticates a request
+  // via the session cookie when its Referer/Origin matches a configured
+  // stateful domain (see docs/architecture.md §3) — without this, every
+  // server-to-server call here would look unauthenticated even with a valid
+  // session cookie attached. Forwarding the browser's own incoming Host is
+  // exactly the same origin Sanctum expects, since nginx is the single entry
+  // point for both the frontend and the API.
+  const incomingHost = (await headers()).get("host");
+
   const response = await fetch(`${INTERNAL_API_URL}/api/v1/user`, {
     headers: {
       Accept: "application/json",
       Cookie: cookieHeader,
+      ...(incomingHost ? { Referer: `http://${incomingHost}/` } : {}),
     },
     cache: "no-store",
   });

@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { logout } from "@/lib/api/endpoints/auth";
+import { roleLabel } from "@/lib/rbac/labels";
 import type { AuthUser } from "@/types/auth";
 
 function initials(name: string): string {
@@ -22,13 +23,6 @@ function initials(name: string): string {
     .slice(0, 2)
     .join("")
     .toUpperCase();
-}
-
-function roleLabel(role: string): string {
-  return role
-    .split("-")
-    .map((word) => word[0].toUpperCase() + word.slice(1))
-    .join(" ");
 }
 
 export function Topbar({ user }: { user: AuthUser }) {

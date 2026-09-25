@@ -2,11 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { hasAnyPermission } from "@/lib/auth/permissions";
 import { cn } from "@/lib/utils";
+import type { AuthUser } from "@/types/auth";
 import { NAV_ITEMS } from "./nav-items";
 
-export function Sidebar() {
+export function Sidebar({ user }: { user: AuthUser }) {
   const pathname = usePathname();
+
+  const visibleItems = NAV_ITEMS.filter(
+    (item) => !item.requiresAnyPermission || hasAnyPermission(user, item.requiresAnyPermission),
+  );
 
   return (
     <aside className="hidden w-64 shrink-0 border-r bg-sidebar md:flex md:flex-col">
@@ -16,7 +22,7 @@ export function Sidebar() {
         </span>
       </div>
       <nav className="flex-1 space-y-1 p-3">
-        {NAV_ITEMS.map((item) => {
+        {visibleItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           const isDisabled = item.plannedForPhase !== undefined;
 

@@ -29,14 +29,25 @@ Status: ✅ implemented (Phase 1) · ⏳ designed, implemented in the noted phas
 | POST | `/api/v1/logout` | invalidate session |
 | GET | `/api/v1/user` | current user + roles/permissions |
 
-### System — Phase 1 ✅ / later ⏳
+### System — Phase 1 ✅ / Phase 2 ✅
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/api/health` | ✅ DB + Redis connectivity check |
-| GET | `/api/v1/audit-logs` | ⏳ Phase 2, filterable by user/entity/action/date, export |
+| GET | `/api/v1/audit-logs` | ✅ filterable by `user_id`/`action`/`entity_type`/`date_from`/`date_to`; export deferred to Phase 6's reporting export |
 
-### Users & roles — Phase 2 ⏳
-`/api/v1/users` (CRUD), `/api/v1/roles`, `/api/v1/permissions` — SuperAdmin only, policy-enforced.
+### Users & roles — Phase 2 ✅
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/api/v1/users` | list, paginated, `?q=` search, `filter[role]`, `filter[is_active]` |
+| POST | `/api/v1/users` | create + assign initial roles |
+| GET/PUT | `/api/v1/users/{user}` | view / update profile fields |
+| PUT | `/api/v1/users/{user}/roles` | sync roles |
+| PATCH | `/api/v1/users/{user}/active` | activate/deactivate (self-deactivation blocked) |
+| GET | `/api/v1/roles` | list roles with their permissions |
+| PUT | `/api/v1/roles/{role}/permissions` | sync a role's permissions |
+| GET | `/api/v1/permissions` | list all defined permissions |
+
+All SuperAdmin-only today (via granular permissions, not a hardcoded role check — see `App\Enums\PermissionEnum`), policy-enforced server-side.
 
 ### Organization — Phase 3 ⏳
 `/api/v1/departments`, `/api/v1/branches`, `/api/v1/program-categories`, `/api/v1/expense-categories` (admin CRUD).

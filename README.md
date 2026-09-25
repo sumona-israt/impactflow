@@ -4,7 +4,7 @@
 
 ImpactFlow is an NGO operations and ERP integration platform: a Laravel + Next.js system for managing programs, beneficiaries, staff/volunteers, expenses and approvals, integrated with Odoo ERP, with data quality management, reporting, and audit logging layered on top.
 
-> **Status: Phase 1 of 12 (Foundation).** This README describes what is actually built today, and links to the plan for everything else. See [`docs/implementation-plan.md`](docs/implementation-plan.md) for the full phase-by-phase roadmap and current status table.
+> **Status: Phase 2 of 12 (RBAC).** This README describes what is actually built today, and links to the plan for everything else. See [`docs/implementation-plan.md`](docs/implementation-plan.md) for the full phase-by-phase roadmap and current status table.
 
 ## Overview
 
@@ -23,7 +23,7 @@ A purpose-built operations layer (Laravel API + Next.js frontend) that owns NGO-
 
 ## Key features (by phase)
 
-See [`docs/implementation-plan.md`](docs/implementation-plan.md) for the authoritative, up-to-date status table. As of Phase 1: authentication (Sanctum SPA/cookie-based), role-based access control data model (`spatie/laravel-permission`, six roles), a health-check endpoint, and the full Docker/CI scaffolding described below. Everything else — programs, beneficiaries, expenses, workflows, data quality, reporting, Odoo sync, notifications — is designed in `docs/` and built out in the phases that follow.
+See [`docs/implementation-plan.md`](docs/implementation-plan.md) for the authoritative, up-to-date status table. As of Phase 2: authentication (Sanctum SPA/cookie-based), full RBAC with granular, dynamically-configurable permissions (not just role-name checks) enforced server-side via Policies, a user administration UI, a role/permission editor, and a system-wide audit trail — plus the health-check endpoint and Docker/CI scaffolding from Phase 1. Everything else — programs, beneficiaries, expenses, workflows, data quality, reporting, Odoo sync, notifications — is designed in `docs/` and built out in the phases that follow.
 
 ## Architecture
 
@@ -52,7 +52,9 @@ See [`docs/api-design.md`](docs/api-design.md) for conventions (`{data, meta}` e
 
 ## Authentication & authorization
 
-Laravel Sanctum SPA (cookie/session) authentication — see [`docs/architecture.md`](docs/architecture.md#3-authentication--session-architecture) for why (short version: Livewire admin screens share the same session guard, so there's one identity system, not two). Six roles are seeded via `spatie/laravel-permission` (Super Administrator, Program Manager, Finance Officer, Field Officer, HR/Admin Officer, Management); policy-level enforcement of what each role can do lands in Phase 2 — Phase 1 only implements login/logout/current-user.
+Laravel Sanctum SPA (cookie/session) authentication — see [`docs/architecture.md`](docs/architecture.md#3-authentication--session-architecture) for why (short version: Livewire admin screens share the same session guard, so there's one identity system, not two). Six roles are seeded via `spatie/laravel-permission` (Super Administrator, Program Manager, Finance Officer, Field Officer, HR/Admin Officer, Management).
+
+Authorization is granular and dynamic, not a hardcoded role check: every protected action checks a specific permission (`App\Enums\PermissionEnum`) via a Laravel Policy, and which roles hold which permissions is itself editable at runtime from **Administration → Roles & Permissions** — a Super Administrator can grant, say, `audit-logs.viewAny` to Program Manager without a code change. Super Administrator bypasses every check (`Gate::before`), matching "Super Administrator: Everything" in the product brief. Every sensitive mutation (user created/updated/activated/deactivated, roles changed, role permissions changed) is recorded in an immutable audit trail (`App\Services\Audit\AuditLogger`), viewable and filterable from **Administration → Audit Logs**, with sensitive fields (passwords) redacted.
 
 ## Workflow engine
 
@@ -156,11 +158,11 @@ cd backend && ./vendor/bin/pest
 cd frontend && npm run lint && npx tsc --noEmit && npm run build
 ```
 
-Current backend coverage: login (success/failure/inactive-account), logout, current-user endpoint, health check, and the role/demo-admin seeder. Full unit/feature/API/workflow/E2E coverage is built out per phase (Phase 10 is dedicated to closing any remaining gaps) — see [`docs/implementation-plan.md`](docs/implementation-plan.md).
+Current backend coverage (23 Pest tests): login (success/failure/inactive-account), logout, current-user endpoint, health check, the role/demo-admin seeder, and Phase 2's user/role/audit-log management — including authorization negative tests (a non-privileged user gets 403) and audit-trail assertions (e.g. password redaction). Full unit/feature/API/workflow/E2E coverage is built out per phase (Phase 10 is dedicated to closing any remaining gaps) — see [`docs/implementation-plan.md`](docs/implementation-plan.md).
 
 ## CI/CD
 
-`.github/workflows/ci.yml` runs on every push/PR: backend lint (Pint) + tests (Pest), frontend lint + type-check + build, and a Docker Compose build/smoke test hitting `/api/health`. No paid services required.
+`.github/workflows/ci.yml` runs on every push/PR: backend lint (Pint) + tests (Pest), frontend lint + type-check + build, and a Docker Compose build/smoke test that seeds the database and exercises a real authenticated login → `/dashboard` request (not just `/api/health`) — added after Phase 2 surfaced a bug where authenticated Server Components silently redirected to `/login` in a way a plain health check couldn't catch (see `docs/architecture.md` §3). No paid services required.
 
 ## Deployment
 
@@ -186,4 +188,4 @@ See [`docs/architecture.md`](docs/architecture.md) for the full backend/frontend
 
 ## Future improvements
 
-Everything tracked in [`docs/implementation-plan.md`](docs/implementation-plan.md) phases 2–12: RBAC policy enforcement, programs/beneficiaries/staff/volunteers/activities, expense & asset management with an approval workflow engine, CSV/Excel import with duplicate detection and a data quality engine, an executive dashboard with real KPIs and reports, Odoo integration (mock + live) with a sync dashboard, notifications, a full security hardening pass, full test coverage, and complete SOP/admin/developer documentation.
+Everything tracked in [`docs/implementation-plan.md`](docs/implementation-plan.md) phases 3–12: programs/beneficiaries/staff/volunteers/activities, expense & asset management with an approval workflow engine, CSV/Excel import with duplicate detection and a data quality engine, an executive dashboard with real KPIs and reports, Odoo integration (mock + live) with a sync dashboard, notifications, a full security hardening pass, full test coverage, and complete SOP/admin/developer documentation.

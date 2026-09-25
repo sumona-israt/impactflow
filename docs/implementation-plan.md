@@ -20,7 +20,7 @@ This document is the single source of truth for **build order, current status, a
 |---|---|---|---|
 | 0 | Planning docs | ✅ Done | This doc + architecture/database/api/odoo-integration docs |
 | 1 | Foundation | ✅ Done | Repo scaffolding, Laravel + Next.js skeletons, Docker (verified end-to-end via `docker compose up`), Sanctum auth (login/logout/user, tested), RBAC data model + seeded roles/demo admin, CI |
-| 2 | RBAC | ⏳ Not started | Full policy/gate enforcement, permission-driven UI, audit log foundation |
+| 2 | RBAC | ✅ Done | Policies/Gates on users, roles & permissions; `AuditLogger` foundation used by every mutation in this phase; permission-driven admin UI (Users, Roles & Permissions, Audit Logs), tested end-to-end incl. a real cross-service auth bug found and fixed (see architecture.md §3) |
 | 3 | Core NGO Operations | ⏳ Not started | Programs, beneficiaries, employees, volunteers, activities |
 | 4 | Finance & Assets | ⏳ Not started | Budgets, expenses, assets, approval workflow engine |
 | 5 | Data Management | ⏳ Not started | CSV/Excel import pipeline, duplicate detection, data quality engine |
