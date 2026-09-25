@@ -22,9 +22,24 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Programs", href: "/programs", icon: ClipboardList, plannedForPhase: 3 },
-  { label: "Beneficiaries", href: "/beneficiaries", icon: Users, plannedForPhase: 3 },
-  { label: "Staff & Volunteers", href: "/people", icon: UserRound, plannedForPhase: 3 },
+  {
+    label: "Programs",
+    href: "/programs",
+    icon: ClipboardList,
+    requiresAnyPermission: ["programs.viewAny"],
+  },
+  {
+    label: "Beneficiaries",
+    href: "/beneficiaries",
+    icon: Users,
+    requiresAnyPermission: ["beneficiaries.viewAny"],
+  },
+  {
+    label: "Staff & Volunteers",
+    href: "/people",
+    icon: UserRound,
+    requiresAnyPermission: ["employees.viewAny", "volunteers.viewAny"],
+  },
   { label: "Finance & Assets", href: "/finance", icon: Banknote, plannedForPhase: 4 },
   { label: "Data Quality", href: "/data-quality", icon: Database, plannedForPhase: 5 },
   { label: "Odoo Integration", href: "/odoo", icon: Plug, plannedForPhase: 7 },

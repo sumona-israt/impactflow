@@ -49,23 +49,23 @@ Status: ✅ implemented (Phase 1) · ⏳ designed, implemented in the noted phas
 
 All SuperAdmin-only today (via granular permissions, not a hardcoded role check — see `App\Enums\PermissionEnum`), policy-enforced server-side.
 
-### Organization — Phase 3 ⏳
-`/api/v1/departments`, `/api/v1/branches`, `/api/v1/program-categories`, `/api/v1/expense-categories` (admin CRUD).
+### Organization — Phase 3 ✅
+`/api/v1/departments`, `/api/v1/branches`, `/api/v1/program-categories` — list (broadly readable, needed for form selects) + create/update (HR/Admin Officer or Super Admin only). `expense-categories` moves to Phase 4 (see below) — it belongs to the Expense entity, which doesn't exist yet.
 
-### Programs — Phase 3 ⏳
-`/api/v1/programs` (CRUD, search/filter/sort/paginate), `/api/v1/programs/{id}/beneficiaries`, `/api/v1/programs/{id}/activities`, `/api/v1/programs/{id}/expenses`, `/api/v1/programs/{id}/budget`, `/api/v1/programs/{id}/submit-for-approval`.
+### Programs — Phase 3 ✅
+`/api/v1/programs` (CRUD, search/filter/sort/paginate), `PATCH /api/v1/programs/{id}/status` (permission-gated direct status change — see `docs/database-design.md` §3 for why this isn't the generic workflow engine), `/api/v1/programs/{id}/beneficiaries` (enrolled list + enroll/unenroll), `/api/v1/programs/{id}/activities` (list + create). `/expenses` and `/budget` sub-resources move to Phase 4 alongside the Expense entity itself.
 
-### Beneficiaries — Phase 3 ⏳
-`/api/v1/beneficiaries` (CRUD, search/filter), `/api/v1/beneficiaries/{id}/enroll`, `/api/v1/beneficiaries/{id}/documents`, `/api/v1/beneficiaries/{id}/data-quality`.
+### Beneficiaries — Phase 3 ✅
+`/api/v1/beneficiaries` (CRUD, search/filter), `/api/v1/beneficiaries/{id}/enrollments` (list programs they're enrolled in). `/documents` and `/data-quality` are Phase 5, once the generic document/attachment system and the data-quality engine exist.
 
-### Employees & volunteers — Phase 3 ⏳
-`/api/v1/employees`, `/api/v1/volunteers` (CRUD).
+### Employees & volunteers — Phase 3 ✅
+`/api/v1/employees`, `/api/v1/volunteers` (CRUD, HR/Admin Officer or Super Admin only).
 
-### Activities — Phase 3 ⏳
-`/api/v1/activities`, `/api/v1/activities/{id}/attendance`.
+### Activities — Phase 3 ✅
+`/api/v1/activities` (CRUD, scoped under a program), `/api/v1/activities/{id}/attendance` (record beneficiary attendance).
 
 ### Expenses & assets — Phase 4 ⏳
-`/api/v1/expenses` (CRUD + `/submit`, `/approve`, `/reject`), `/api/v1/assets` (CRUD + `/assign`, `/return`).
+`/api/v1/expense-categories` (admin CRUD), `/api/v1/expenses` (CRUD + `/submit`, `/approve`, `/reject`), `/api/v1/assets` (CRUD + `/assign`, `/return`).
 
 ### Workflows — Phase 4 ⏳
 `/api/v1/workflows` (admin config), `/api/v1/workflow-instances/{id}/actions` (approve/reject/return/request-changes/escalate).

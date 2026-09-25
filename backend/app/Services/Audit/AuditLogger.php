@@ -26,7 +26,7 @@ class AuditLogger
         'remember_token',
     ];
 
-    public function log(string $action, string $entityType, ?int $entityId, array $old = [], array $new = []): AuditLog
+    public function log(string $action, string $entityType, string|int|null $entityId, array $old = [], array $new = []): AuditLog
     {
         return AuditLog::create([
             'user_id' => Auth::id(),

@@ -12,11 +12,56 @@ use Spatie\Permission\PermissionRegistrar;
 class PermissionSeeder extends Seeder
 {
     /**
-     * Runs after RoleSeeder. Only Super Administrator gets these permissions
-     * today — user/role/audit-log administration is a Super Admin-only
-     * capability per the product brief; other roles gain permissions here
-     * only if a future phase actually grants them one.
+     * Curated default permission sets per the product brief's role
+     * descriptions (§4). Super Administrator gets every permission (assigned
+     * below, separately from this map) on top of its `Gate::before` bypass.
+     * These are *defaults* — real deployments customize per-role permissions
+     * from Administration → Roles & Permissions afterward; re-running this
+     * seeder resets any such customization, so it's meant for fresh/demo
+     * environments (`migrate:fresh --seed`), not a persisted production reset.
+     *
+     * @var array<string, list<PermissionEnum>>
      */
+    private const DEFAULT_ROLE_PERMISSIONS = [
+        RoleEnum::ProgramManager->value => [
+            PermissionEnum::ViewAnyPrograms, PermissionEnum::ViewProgram,
+            PermissionEnum::CreateProgram, PermissionEnum::UpdateProgram,
+            PermissionEnum::UpdateProgramStatus, PermissionEnum::EnrollBeneficiaryInProgram,
+            PermissionEnum::ViewAnyBeneficiaries, PermissionEnum::ViewBeneficiary,
+            PermissionEnum::CreateBeneficiary, PermissionEnum::UpdateBeneficiary,
+            PermissionEnum::ViewAnyActivities, PermissionEnum::CreateActivity,
+            PermissionEnum::UpdateActivity, PermissionEnum::RecordActivityAttendance,
+            PermissionEnum::ViewAnyDepartments, PermissionEnum::ViewAnyBranches,
+            PermissionEnum::ViewAnyProgramCategories,
+        ],
+        RoleEnum::FinanceOfficer->value => [
+            PermissionEnum::ViewAnyPrograms, PermissionEnum::ViewProgram,
+            PermissionEnum::ViewAnyDepartments, PermissionEnum::ViewAnyBranches,
+            PermissionEnum::ViewAnyProgramCategories,
+        ],
+        RoleEnum::FieldOfficer->value => [
+            PermissionEnum::ViewAnyPrograms, PermissionEnum::ViewProgram,
+            PermissionEnum::ViewAnyBeneficiaries, PermissionEnum::ViewBeneficiary,
+            PermissionEnum::CreateBeneficiary, PermissionEnum::UpdateBeneficiary,
+            PermissionEnum::ViewAnyActivities, PermissionEnum::CreateActivity,
+            PermissionEnum::RecordActivityAttendance,
+            PermissionEnum::ViewAnyDepartments, PermissionEnum::ViewAnyBranches,
+            PermissionEnum::ViewAnyProgramCategories,
+        ],
+        RoleEnum::HrAdminOfficer->value => [
+            PermissionEnum::ViewAnyEmployees, PermissionEnum::CreateEmployee, PermissionEnum::UpdateEmployee,
+            PermissionEnum::ViewAnyVolunteers, PermissionEnum::CreateVolunteer, PermissionEnum::UpdateVolunteer,
+            PermissionEnum::ViewAnyDepartments, PermissionEnum::ManageDepartments,
+            PermissionEnum::ViewAnyBranches, PermissionEnum::ManageBranches,
+        ],
+        RoleEnum::Management->value => [
+            PermissionEnum::ViewAnyPrograms, PermissionEnum::ViewProgram,
+            PermissionEnum::ViewAnyBeneficiaries, PermissionEnum::ViewBeneficiary,
+            PermissionEnum::ViewAnyDepartments, PermissionEnum::ViewAnyBranches,
+            PermissionEnum::ViewAnyProgramCategories,
+        ],
+    ];
+
     public function run(): void
     {
         foreach (PermissionEnum::cases() as $permission) {
@@ -29,5 +74,10 @@ class PermissionSeeder extends Seeder
 
         Role::findByName(RoleEnum::SuperAdmin->value, 'web')
             ->syncPermissions(array_map(fn (PermissionEnum $p) => $p->value, PermissionEnum::cases()));
+
+        foreach (self::DEFAULT_ROLE_PERMISSIONS as $roleName => $permissions) {
+            Role::findByName($roleName, 'web')
+                ->syncPermissions(array_map(fn (PermissionEnum $p) => $p->value, $permissions));
+        }
     }
 }

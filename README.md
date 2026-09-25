@@ -4,7 +4,7 @@
 
 ImpactFlow is an NGO operations and ERP integration platform: a Laravel + Next.js system for managing programs, beneficiaries, staff/volunteers, expenses and approvals, integrated with Odoo ERP, with data quality management, reporting, and audit logging layered on top.
 
-> **Status: Phase 2 of 12 (RBAC).** This README describes what is actually built today, and links to the plan for everything else. See [`docs/implementation-plan.md`](docs/implementation-plan.md) for the full phase-by-phase roadmap and current status table.
+> **Status: Phase 3 of 12 (Core NGO Operations).** This README describes what is actually built today, and links to the plan for everything else. See [`docs/implementation-plan.md`](docs/implementation-plan.md) for the full phase-by-phase roadmap and current status table.
 
 ## Overview
 
@@ -23,7 +23,7 @@ A purpose-built operations layer (Laravel API + Next.js frontend) that owns NGO-
 
 ## Key features (by phase)
 
-See [`docs/implementation-plan.md`](docs/implementation-plan.md) for the authoritative, up-to-date status table. As of Phase 2: authentication (Sanctum SPA/cookie-based), full RBAC with granular, dynamically-configurable permissions (not just role-name checks) enforced server-side via Policies, a user administration UI, a role/permission editor, and a system-wide audit trail — plus the health-check endpoint and Docker/CI scaffolding from Phase 1. Everything else — programs, beneficiaries, expenses, workflows, data quality, reporting, Odoo sync, notifications — is designed in `docs/` and built out in the phases that follow.
+See [`docs/implementation-plan.md`](docs/implementation-plan.md) for the authoritative, up-to-date status table. As of Phase 3: full RBAC (Phase 2) plus the core operational entities — **Programs** (with permission-gated status transitions: draft → pending approval → approved → active → paused/completed → archived), **Beneficiaries** (registration, profile, program enrollment, with sensitive fields like phone/DOB restricted to the authorized detail view), **Employees & Volunteers**, and **Activities & Attendance** tracking, plus the organizational lookups (departments, branches, program categories) they depend on. Every module has a working admin UI, server-side authorization, and an audit trail entry for every mutation. Everything else — expenses/assets/approval workflows, data import & quality, executive dashboards, Odoo sync, notifications — is designed in `docs/` and built out in the phases that follow.
 
 ## Architecture
 
@@ -133,7 +133,7 @@ docker compose up -d postgres redis
 cd backend && php artisan migrate --seed
 ```
 
-The seeder creates the six roles and one demo Super Administrator (see below). Nothing else is seeded yet — beneficiary/program/staff demo data ships with Phase 3.
+The seeder creates the six roles, one demo Super Administrator (see below), and real organizational reference data (one organization, four departments, three branches, six program categories). No beneficiary, program, or staff records are seeded — that would mean fabricating people, which the project deliberately avoids (see `docs/implementation-plan.md` ground rules); use the UI to create real-shaped demo records, or write your own seeder for local load-testing.
 
 ## Demo credentials
 
@@ -158,7 +158,7 @@ cd backend && ./vendor/bin/pest
 cd frontend && npm run lint && npx tsc --noEmit && npm run build
 ```
 
-Current backend coverage (23 Pest tests): login (success/failure/inactive-account), logout, current-user endpoint, health check, the role/demo-admin seeder, and Phase 2's user/role/audit-log management — including authorization negative tests (a non-privileged user gets 403) and audit-trail assertions (e.g. password redaction). Full unit/feature/API/workflow/E2E coverage is built out per phase (Phase 10 is dedicated to closing any remaining gaps) — see [`docs/implementation-plan.md`](docs/implementation-plan.md).
+Current backend coverage (41 Pest tests): auth (login/logout/inactive-account), Phase 2's user/role/audit-log management, and Phase 3's programs (incl. status-transition guards and enrollment), beneficiaries (incl. the sensitive-field redaction on list endpoints), employees, volunteers, and activities/attendance — including per-role authorization negative tests (a role without the right permission gets 403) and audit-trail assertions. Full unit/feature/API/workflow/E2E coverage is built out per phase (Phase 10 is dedicated to closing any remaining gaps) — see [`docs/implementation-plan.md`](docs/implementation-plan.md).
 
 ## CI/CD
 
@@ -170,7 +170,7 @@ Not yet formalized beyond the Docker Compose stack described above — a product
 
 ## Screenshots
 
-Added once the UI has enough real screens to be worth screenshotting (Phase 3+). The current Phase 1 UI is a login page and an empty dashboard shell — see `docs/demo/` (added in Phase 12) for the eventual walkthrough.
+Not yet added — reserved for `docs/demo/` (Phase 12) once the full demo script exists. The UI is real and screenshot-worthy as of Phase 3 (programs, beneficiaries, staff/volunteers, activities, admin), but screenshots will be captured once Phase 6's dashboard gives a natural "front page" for a walkthrough.
 
 ## Project structure
 
@@ -188,4 +188,4 @@ See [`docs/architecture.md`](docs/architecture.md) for the full backend/frontend
 
 ## Future improvements
 
-Everything tracked in [`docs/implementation-plan.md`](docs/implementation-plan.md) phases 3–12: programs/beneficiaries/staff/volunteers/activities, expense & asset management with an approval workflow engine, CSV/Excel import with duplicate detection and a data quality engine, an executive dashboard with real KPIs and reports, Odoo integration (mock + live) with a sync dashboard, notifications, a full security hardening pass, full test coverage, and complete SOP/admin/developer documentation.
+Everything tracked in [`docs/implementation-plan.md`](docs/implementation-plan.md) phases 4–12: expense & asset management with a generic approval workflow engine, CSV/Excel import with duplicate detection and a data quality engine, an executive dashboard with real KPIs and reports, Odoo integration (mock + live) with a sync dashboard, notifications, a full security hardening pass, full test coverage, and complete SOP/admin/developer documentation.

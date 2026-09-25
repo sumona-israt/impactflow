@@ -21,7 +21,7 @@ This document is the single source of truth for **build order, current status, a
 | 0 | Planning docs | ✅ Done | This doc + architecture/database/api/odoo-integration docs |
 | 1 | Foundation | ✅ Done | Repo scaffolding, Laravel + Next.js skeletons, Docker (verified end-to-end via `docker compose up`), Sanctum auth (login/logout/user, tested), RBAC data model + seeded roles/demo admin, CI |
 | 2 | RBAC | ✅ Done | Policies/Gates on users, roles & permissions; `AuditLogger` foundation used by every mutation in this phase; permission-driven admin UI (Users, Roles & Permissions, Audit Logs), tested end-to-end incl. a real cross-service auth bug found and fixed (see architecture.md §3) |
-| 3 | Core NGO Operations | ⏳ Not started | Programs, beneficiaries, employees, volunteers, activities |
+| 3 | Core NGO Operations | ✅ Done | Programs (with permission-gated status transitions), beneficiaries (list/detail with sensitive-field redaction), employees, volunteers, activities + attendance, org lookups (departments/branches/categories) — full CRUD UI, 41 backend tests, verified end-to-end via `docker compose`. See `docs/database-design.md` §§2-6 for scope simplifications made while implementing (program_budgets/program_locations/beneficiary_contacts/beneficiary_documents deferred, `odoo_*_id` columns deferred to Phase 7) |
 | 4 | Finance & Assets | ⏳ Not started | Budgets, expenses, assets, approval workflow engine |
 | 5 | Data Management | ⏳ Not started | CSV/Excel import pipeline, duplicate detection, data quality engine |
 | 6 | Analytics | ⏳ Not started | Executive dashboard, KPIs, charts, report generation/export |
