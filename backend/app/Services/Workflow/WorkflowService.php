@@ -6,6 +6,8 @@ use App\Contracts\Workflowable;
 use App\Enums\RoleEnum;
 use App\Enums\WorkflowDecision;
 use App\Enums\WorkflowInstanceStatus;
+use App\Events\WorkflowInstanceActed;
+use App\Events\WorkflowInstanceStarted;
 use App\Models\ApprovalWorkflow;
 use App\Models\User;
 use App\Models\WorkflowInstance;
@@ -33,7 +35,11 @@ class WorkflowService
             'status' => WorkflowInstanceStatus::InProgress,
         ]);
 
-        $entity->syncWorkflowStatus($instance->fresh(['currentStep']));
+        $instance = $instance->fresh(['currentStep']);
+
+        $entity->syncWorkflowStatus($instance);
+
+        WorkflowInstanceStarted::dispatch($instance);
 
         return $instance;
     }
@@ -75,6 +81,8 @@ class WorkflowService
         if ($entity instanceof Workflowable) {
             $entity->syncWorkflowStatus($instance);
         }
+
+        WorkflowInstanceActed::dispatch($instance, $decision);
 
         return $instance;
     }

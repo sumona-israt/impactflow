@@ -8,10 +8,15 @@ use App\Events\BeneficiaryRegistered;
 use App\Events\EmployeeCreated;
 use App\Events\ExpenseApproved;
 use App\Events\ProgramApproved;
+use App\Events\ProgramSubmittedForApproval;
+use App\Events\WorkflowInstanceActed;
+use App\Events\WorkflowInstanceStarted;
 use App\Listeners\DispatchBeneficiaryRegisteredToOdoo;
 use App\Listeners\DispatchEmployeeCreatedToOdoo;
 use App\Listeners\DispatchExpenseApprovedToOdoo;
 use App\Listeners\DispatchProgramApprovedToOdoo;
+use App\Listeners\NotifyManagementOfProgramSubmission;
+use App\Listeners\NotifyWorkflowParticipants;
 use App\Models\AuditLog;
 use App\Models\User;
 use App\Policies\AuditLogPolicy;
@@ -57,5 +62,11 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(ExpenseApproved::class, DispatchExpenseApprovedToOdoo::class);
         Event::listen(BeneficiaryRegistered::class, DispatchBeneficiaryRegisteredToOdoo::class);
         Event::listen(EmployeeCreated::class, DispatchEmployeeCreatedToOdoo::class);
+
+        // Notifications (see docs/database-design.md §11) — same explicit
+        // registration style as the Odoo listeners above.
+        Event::listen(WorkflowInstanceStarted::class, [NotifyWorkflowParticipants::class, 'handleStarted']);
+        Event::listen(WorkflowInstanceActed::class, [NotifyWorkflowParticipants::class, 'handleActed']);
+        Event::listen(ProgramSubmittedForApproval::class, NotifyManagementOfProgramSubmission::class);
     }
 }

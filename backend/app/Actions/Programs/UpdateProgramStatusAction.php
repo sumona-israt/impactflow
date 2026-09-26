@@ -4,6 +4,7 @@ namespace App\Actions\Programs;
 
 use App\Enums\ProgramStatus;
 use App\Events\ProgramApproved;
+use App\Events\ProgramSubmittedForApproval;
 use App\Models\Program;
 use App\Services\Audit\AuditLogger;
 use Illuminate\Validation\ValidationException;
@@ -35,6 +36,10 @@ class UpdateProgramStatusAction
 
             if ($status === ProgramStatus::Approved) {
                 ProgramApproved::dispatch($program);
+            }
+
+            if ($status === ProgramStatus::PendingApproval) {
+                ProgramSubmittedForApproval::dispatch($program);
             }
         }
 

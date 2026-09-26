@@ -37,10 +37,9 @@ backend/
 │   │   └── Resources/    # API Resources -> {data, meta} envelope
 │   ├── Jobs/             # queued work (Odoo sync, imports, report generation, emails)
 │   ├── Listeners/
-│   ├── Livewire/         # selected internal/admin workflows only (e.g. Odoo config screen)
 │   ├── Mail/
 │   ├── Models/
-│   ├── Notifications/
+│   ├── Notifications/    # WorkflowActionNeeded, WorkflowDecisionRecorded, ProgramAwaitingApproval, OdooSyncFailed
 │   ├── Policies/         # authorization, one per model, enforced via Gate/Policy
 │   ├── Services/
 │   │   ├── Odoo/         # OdooClient, OdooAuthService, OdooSyncService, OdooMappingService, OdooHealthService
@@ -55,18 +54,18 @@ backend/
 │   └── factories/
 ├── routes/
 │   ├── api.php           # /api/v1/*
-│   └── web.php           # Sanctum CSRF cookie route, Livewire admin routes
-├── resources/views/      # Livewire/Blade views for admin-only screens
+│   ├── console.php       # scheduled commands (e.g. odoo:poll)
+│   └── web.php           # Sanctum CSRF cookie route only
 └── tests/
     ├── Feature/
     └── Unit/
 ```
 
-**Scaffolding policy:** a directory above is only populated with real code when a phase genuinely needs it. `Repositories/` is intentionally absent — generic Eloquent CRUD repositories are an anti-pattern here; the one real gateway abstraction the project needs is `Services/Odoo/OdooClient`, which already has a home. `Policies/`, `Livewire/`, `Events/Listeners` gain their first files in Phase 2 (RBAC) and Phase 4 (workflow engine) respectively — not stubbed empty in Phase 1. `Services/DataQuality/`, `Services/Import/`, and `Jobs/Import/` are populated as of Phase 5 (duplicate detection, the spreadsheet reader, and the queued commit job).
+**Scaffolding policy:** a directory above is only populated with real code when a phase genuinely needs it. `Repositories/` is intentionally absent — generic Eloquent CRUD repositories are an anti-pattern here; the one real gateway abstraction the project needs is `Services/Odoo/OdooClient`, which already has a home. `Policies/`, `Events/Listeners` gain their first files in Phase 2 (RBAC) and Phase 4 (workflow engine) respectively — not stubbed empty in Phase 1. `Services/DataQuality/`, `Services/Import/`, and `Jobs/Import/` are populated as of Phase 5 (duplicate detection, the spreadsheet reader, and the queued commit job). `Mail/`/`Notifications/` are populated as of Phase 8. **`Livewire/` never materialized** — an earlier plan (this section, written in Phase 0) anticipated it for "selected internal/admin workflows... e.g. the Odoo config screen," but when Phase 7 actually built that screen, a plain Next.js page (`frontend/src/app/(dashboard)/odoo/`) fit the rest of the app's established pattern better than introducing a second server-rendered UI stack for one screen; `livewire/livewire` was never added to `composer.json`. Every admin-only screen in this app (Roles & Permissions, Audit Logs, Odoo Integration) is a permission-gated Next.js page, not a Livewire component.
 
 ## 3. Authentication & session architecture
 
-- **Mechanism:** Laravel Sanctum SPA (stateful, cookie-based) authentication — the same session guard used by Livewire admin screens. One identity system serves both the Next.js SPA and Livewire, so RBAC state never drifts between two auth mechanisms.
+- **Mechanism:** Laravel Sanctum SPA (stateful, cookie-based) authentication, serving the Next.js SPA only — there is no separate Livewire auth path to keep in sync (see §2's scaffolding note: Livewire was never adopted).
 - **Flow:** Next.js calls `GET /sanctum/csrf-cookie` once, then `POST /api/v1/login` with credentials; Laravel sets an encrypted, HttpOnly session cookie (`SESSION_DRIVER=redis`). Subsequent requests carry the cookie automatically (same origin via nginx) and an `X-XSRF-TOKEN` header read from the non-HttpOnly `XSRF-TOKEN` cookie for CSRF protection.
 - **Server-side rendering gotcha:** Next.js Server Components/Route Handlers do not automatically forward the browser's cookies when calling Laravel. `frontend/src/lib/auth/session.ts` exports `getServerAuth()`, the single seam every protected server component uses to read the incoming request's `cookie` header and forward it to `GET /api/v1/user`.
 - **Second SSR gotcha (found in Phase 2, easy to reintroduce):** forwarding the cookie header is not enough on its own. Sanctum's `EnsureFrontendRequestsAreStateful` only authenticates a request via the session cookie when its `Referer`/`Origin` matches a configured stateful domain — a plain server-to-server `fetch()` with no such header looks unauthenticated even with a valid session cookie attached, so every "authenticated" page silently redirected back to `/login`. `getServerAuth()` fixes this by forwarding the incoming request's own `Host` header as `Referer` (correct here specifically because nginx is the single origin for both frontend and API — see the CI docker-smoke-test job, which now exercises a real authenticated `/dashboard` request rather than only `/api/health`, precisely to catch this class of bug before it ships again).

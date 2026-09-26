@@ -139,12 +139,12 @@ Also see `App\Enums\PermissionEnum`'s Phase 7 cases (`odoo.viewAny`, `odoo.retry
 - The Odoo → ImpactFlow direction (`odoo:poll`, scheduled every 5 minutes) probes connectivity and logs how many mapped records changed upstream since the last poll; it does not write those changes back into ImpactFlow. Reverse field-mapping and conflict resolution is a materially separate feature (whose data wins, partial-field merges) — detecting and reporting drift is the complete, honest slice this phase implements, not a partially-built reconciliation engine.
 - The optional custom Odoo module (`docs/odoo-integration.md` §8) was not attempted — it was explicitly scoped as a stretch item, not core Phase 7 work.
 
-## 11. Reporting & notifications — Phase 6 ✅ / Phase 8 ⏳
+## 11. Reporting & notifications — Phase 6 ✅ / Phase 8 ✅
 
 | Table | Key columns |
 |---|---|
 | `reports` | `id (uuid), type, format, parameters (jsonb), file_path, generated_by, generated_at` |
-| `notifications` | Laravel's default notifications table (polymorphic) — Phase 8 |
+| `notifications` | Laravel's default notifications table (polymorphic): `id (uuid), type, notifiable_type, notifiable_id, data (json), read_at, timestamps` |
 
 **Decisions worth calling out:**
 - No separate `report_exports` table. The original sketch above had one `reports` row potentially fanning out to multiple format exports; in the shipped UX (`?format=csv|xlsx|pdf` chosen up front, one file produced and downloaded per request), a `reports` row and its file are created atomically in the same request — there's never a moment where one row has two different-format children. `format`/`file_path` are folded directly onto `reports`, matching how `expense_attachments` folds `file_path` onto its own row rather than a generic "exports" abstraction.
@@ -153,6 +153,7 @@ Also see `App\Enums\PermissionEnum`'s Phase 7 cases (`odoo.viewAny`, `odoo.retry
 - Authorization reuses existing entity permissions rather than inventing report-specific ones: `App\Enums\ReportType::permission()` maps each of the 4 types to the permission that already governs viewing that entity (`programs.viewAny`, `beneficiaries.view`, `expenses.viewAny`, `data-quality-issues.viewAny`). Report history listing and re-download re-check the same per-type Gate rather than a blanket `reports.viewAny`.
 - The executive dashboard (`GET /api/v1/dashboard/kpis`) needs no dedicated permission either — each of its 7 sections (programs, beneficiaries, staffing, activities, finance, data quality, workflows) is included in the response only if the caller holds that section's existing entity permission, omitted entirely (never a fabricated zero) otherwise. This mirrors `frontend/src/components/layout/nav-items.ts`'s `requiresAnyPermission` composition, applied server-side. One default-permission-set update rode along with this: `Management`'s seeded defaults (`PermissionSeeder`) gained `employees.viewAny`/`volunteers.viewAny`/`activities.viewAny` — it's the role meant to consume the dashboard, and previously couldn't see 3 of its sections out of the box.
 - Beneficiary enrollment-by-month and any other date-bucketed series are grouped in PHP (`Carbon::format('Y-m')`), not SQL date functions — the same portability rule already established for the duplicate-detection query in §9, since tests run on SQLite and production runs on Postgres.
+- **Phase 8 notifications:** `App\Contracts\Workflowable` gained one method, `workflowOwner(): ?User` ("whose action this workflow is about" — `Expense::workflowOwner()` returns its `submitter`), so the generic notification listener can reach a terminal decision's recipient without knowing about Expense specifically. Two new events — `WorkflowInstanceStarted`/`WorkflowInstanceActed` — are dispatched from `App\Services\Workflow\WorkflowService` itself, not from an Action layer: unlike `App\Events\ExpenseApproved` (Phase 7), which needs an `instanceof Expense` check and therefore lives in `RecordWorkflowActionAction` alongside that check, these two need no entity-specific branching at all, so they belong in the actual generic engine. `ExpenseApproved`'s existing dispatch site is untouched. Mail delivery uses Laravel's `log` driver (`MAIL_MAILER=log`, already the default) — an honest, zero-infrastructure "mock mode" for email, the same spirit as Odoo's mock mode, that needed no new code to exist.
 
 ## 12. Indexing & integrity conventions
 

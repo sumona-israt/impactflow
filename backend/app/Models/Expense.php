@@ -48,6 +48,11 @@ class Expense extends Model implements BudgetConstrained, Workflowable
         return $this->belongsTo(User::class, 'submitted_by');
     }
 
+    public function workflowOwner(): ?User
+    {
+        return $this->submitter;
+    }
+
     public function attachments(): HasMany
     {
         return $this->hasMany(ExpenseAttachment::class);

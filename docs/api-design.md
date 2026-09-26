@@ -120,6 +120,16 @@ All SuperAdmin-only today (via granular permissions, not a hardcoded role check 
 | GET | `/api/v1/odoo/config` | mode/base_url/database (read-only, from env) + `is_active` |
 | PUT | `/api/v1/odoo/config` | `{is_active}` only — SuperAdmin (`odoo.manageConfig`, never assigned to any other role by default) |
 
+### Notifications — Phase 8 ✅
+Every action here is scoped to the requesting user's own notifications — no `PermissionEnum` gating, since there's nothing to permission-check beyond "is this yours."
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/api/v1/notifications` | Paginated, newest first |
+| GET | `/api/v1/notifications/unread-count` | `{count}` |
+| POST | `/api/v1/notifications/{notification}/read` | 404s if the notification isn't the caller's own |
+| POST | `/api/v1/notifications/read-all` | Marks every unread notification for the caller |
+
 ### Search — deferred
 `GET /api/v1/search?q=` — federated search across programs/beneficiaries/employees/volunteers/expenses/assets, each result tagged with entity type. Previously tracked under "Phase 6" here; deferred out of that phase by product decision (Phase 6 shipped as dashboard + reports only, per `docs/implementation-plan.md`) rather than built alongside it. Revisit scope/phase assignment separately.
 

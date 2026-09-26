@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\DepartmentController;
 use App\Http\Controllers\Api\V1\EmployeeController;
 use App\Http\Controllers\Api\V1\ExpenseCategoryController;
 use App\Http\Controllers\Api\V1\ExpenseController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OdooController;
 use App\Http\Controllers\Api\V1\PermissionController;
 use App\Http\Controllers\Api\V1\ProgramCategoryController;
@@ -127,5 +128,11 @@ Route::prefix('v1')->group(function () {
         Route::post('/odoo/sync/{entity}/{id}/retry', [OdooController::class, 'retry']);
         Route::get('/odoo/config', [OdooController::class, 'config']);
         Route::put('/odoo/config', [OdooController::class, 'updateConfig']);
+
+        // Notifications (see docs/database-design.md §11)
+        Route::get('/notifications', [NotificationController::class, 'index']);
+        Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+        Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+        Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
     });
 });

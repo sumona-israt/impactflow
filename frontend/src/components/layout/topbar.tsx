@@ -15,6 +15,7 @@ import {
 import { logout } from "@/lib/api/endpoints/auth";
 import { roleLabel } from "@/lib/rbac/labels";
 import type { AuthUser } from "@/types/auth";
+import { NotificationBell } from "./notification-bell";
 
 function initials(name: string): string {
   return name
@@ -36,7 +37,7 @@ export function Topbar({ user }: { user: AuthUser }) {
 
   return (
     <header className="flex h-14 items-center justify-between border-b bg-background px-4">
-      <div />
+      <NotificationBell />
       <DropdownMenu>
         <DropdownMenuTrigger
           className={buttonVariants({ variant: "ghost", className: "gap-2 px-2" })}

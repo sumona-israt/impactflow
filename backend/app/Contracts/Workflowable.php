@@ -2,6 +2,7 @@
 
 namespace App\Contracts;
 
+use App\Models\User;
 use App\Models\WorkflowInstance;
 
 /**
@@ -13,4 +14,10 @@ use App\Models\WorkflowInstance;
 interface Workflowable
 {
     public function syncWorkflowStatus(WorkflowInstance $instance): void;
+
+    /**
+     * Who to notify when this entity's workflow reaches a final decision
+     * (see docs/database-design.md §11 / Phase 8 notifications).
+     */
+    public function workflowOwner(): ?User;
 }
