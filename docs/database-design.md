@@ -118,13 +118,26 @@ Generic, reusable — not hardcoded per entity. Expense is the first (and, in Ph
 - Commit runs as a queued job (`ProcessDataImportCommit`) on the `worker` container already provisioned in `docker-compose.yml` — matching `docs/architecture.md`'s anticipated `Jobs/Import`. It authenticates as the uploader (`Auth::setUser`) purely for audit/`created_by` attribution, since the job runs outside any HTTP request.
 - Data quality score: `round(100 * (1 - open_issues / max(total_beneficiaries, 1)), 1)`, clamped to `[0, 100]` — simple and deterministic rather than a weighted/severity-based formula, since there's only one issue type today.
 
-## 10. Odoo integration — Phase 7 ⏳
+## 10. Odoo integration — Phase 7 ✅
 
 | Table | Key columns |
 |---|---|
-| `odoo_connections` | `id, name, base_url, database, mode (mock/live), is_active` (credentials referenced via env, never stored in plaintext in this table) |
-| `odoo_mappings` | `id, entity_type, local_id, odoo_model, odoo_id` |
-| `odoo_sync_logs` | `id, entity, local_id, odoo_id nullable, operation, status, request_payload (jsonb), response_payload (jsonb), error_message, retry_count, request_time, response_time` |
+| `odoo_connections` | `id, name, is_active` — single seeded row |
+| `odoo_mappings` | `id, entity_type, local_id, odoo_model, odoo_id`, unique on `(entity_type, local_id, odoo_model)` |
+| `odoo_sync_logs` | `id, entity_type, local_id, odoo_id nullable, operation, status, request_payload (json), response_payload (json), error_message, retry_count, request_time, response_time`, unique on `(entity_type, local_id, operation)` |
+| `programs.odoo_project_id`, `employees.odoo_employee_id` | nullable, set once a sync succeeds |
+| `expenses.odoo_synced` | boolean, set once a sync succeeds |
+
+Also see `App\Enums\PermissionEnum`'s Phase 7 cases (`odoo.viewAny`, `odoo.retry`, `odoo.manageConfig`) and `App\Events\{ProgramApproved,ExpenseApproved,BeneficiaryRegistered,EmployeeCreated}` — the first domain events in this codebase, each with one `App\Listeners\Dispatch*ToOdoo` listener that queues `App\Jobs\OdooSyncJob`.
+
+**Decisions worth calling out:**
+- `odoo_connections` deliberately does **not** store `base_url`/`database`/`mode`, unlike the original sketch — those stay env/config-only (`config/odoo.php`), so there's exactly one place they can drift from the real credentials, never two. The table's only real job is the one thing that can't live in a `.env` file and still be operable from the UI: a SuperAdmin-mutable `is_active` pause/resume toggle, used by the "simulate an outage" demo scenario and by `OdooSyncService`, which skips (not fails) a sync while paused.
+- `odoo_sync_logs` upserts one row per `(entity_type, local_id, operation)` rather than inserting a new row per attempt — `retry_count` increments in place across `OdooSyncJob`'s retries, matching what the column name already implies. A row's final state is one of `pending` (mid-attempt), `success`, `failed` (this attempt failed; `OdooSyncJob::failed()` sets this same row once retries are exhausted), or `skipped` (the connection was paused).
+- Beneficiaries get no denormalized `odoo_partner_id` column, unlike Program/Employee — their sync state lives only in `odoo_mappings`. Program and Employee detail pages want a quick "synced to Odoo" fact without a join; nothing in the product brief needs that for Beneficiaries specifically, so the more consistent (single-source) design was kept there.
+- Transport is JSON-RPC 2 (`App\Services\Odoo\OdooJsonRpcClient`, via Laravel's `Http` facade) rather than XML-RPC — `ext-xmlrpc` isn't installed in this image and can no longer be installed from PHP core source past PHP 8, and `docs/odoo-integration.md` §2 itself allows either transport.
+- `ProgramApproved` fires on `ProgramStatus::Approved`, not the later `Active` transition — it's the literal, distinct "approved for execution" moment in `ProgramStatus::allowedNextStatuses()`, and the moment a project should exist in Odoo regardless of when field activity actually starts.
+- The Odoo → ImpactFlow direction (`odoo:poll`, scheduled every 5 minutes) probes connectivity and logs how many mapped records changed upstream since the last poll; it does not write those changes back into ImpactFlow. Reverse field-mapping and conflict resolution is a materially separate feature (whose data wins, partial-field merges) — detecting and reporting drift is the complete, honest slice this phase implements, not a partially-built reconciliation engine.
+- The optional custom Odoo module (`docs/odoo-integration.md` §8) was not attempted — it was explicitly scoped as a stretch item, not core Phase 7 work.
 
 ## 11. Reporting & notifications — Phase 6 ✅ / Phase 8 ⏳
 

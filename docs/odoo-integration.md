@@ -87,3 +87,12 @@ ODOO_MOCK_FAILURE_RATE=0  # 0-1, mock mode only, for demoing retry behavior
 ```
 
 Documented in `backend/.env.example`; never committed with real values.
+
+## 10. Implementation notes (Phase 7, shipped)
+
+Two decisions this design doc left open, resolved during implementation — see `docs/database-design.md` §10 for the full scope-decision list:
+
+- **Transport: JSON-RPC 2, not XML-RPC.** `ext-xmlrpc` isn't installed in `docker/php/Dockerfile` and can't be added from PHP core source past PHP 8 (it moved to a community PECL package with its own build dependencies). JSON-RPC needs no extension or extra composer package — just Laravel's `Http` facade — so `App\Services\Odoo\OdooJsonRpcClient` implements that side, and `App\Services\Odoo\FakeOdooClient` implements the same `App\Contracts\OdooClientInterface` for mock mode.
+- **`ProgramApproved` fires on `ProgramStatus::Approved`**, not the later `Active` transition — the literal, distinct "approved for execution" state in `ProgramStatus::allowedNextStatuses()`, and the moment a project should exist in Odoo regardless of when field activity actually starts.
+
+The one schema deviation from §10's original sketch (`odoo_connections` no longer stores `base_url`/`database`/`mode` — those stay env-only) is documented in `docs/database-design.md` §10, not repeated here.

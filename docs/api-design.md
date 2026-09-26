@@ -111,8 +111,14 @@ All SuperAdmin-only today (via granular permissions, not a hardcoded role check 
 | GET | `/api/v1/reports/{type}?format=csv\|xlsx\|pdf` | Generate a report (`type` one of `program-performance`, `beneficiaries`, `financial`, `data-quality`) and stream the file back in the same request; also accepts type-specific filters (e.g. `program_id`, `date_from`/`date_to`) |
 | GET | `/api/v1/reports/{report}/download` | Re-download a previously generated report |
 
-### Odoo — Phase 7 ⏳
-`/api/v1/odoo/status`, `/api/v1/odoo/sync-logs`, `/api/v1/odoo/sync/{entity}/{id}/retry`, `/api/v1/odoo/config` (SuperAdmin).
+### Odoo — Phase 7 ✅
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/api/v1/odoo/status` | Mode, `is_active`, connectivity probe, per-entity synced/failed counts — see `docs/database-design.md` §10 |
+| GET | `/api/v1/odoo/sync-logs` | Paginated, `?filter[status]=` |
+| POST | `/api/v1/odoo/sync/{entity}/{id}/retry` | `{entity}` is one of `program`/`beneficiary`/`employee`/`expense`; re-dispatches `OdooSyncJob` |
+| GET | `/api/v1/odoo/config` | mode/base_url/database (read-only, from env) + `is_active` |
+| PUT | `/api/v1/odoo/config` | `{is_active}` only — SuperAdmin (`odoo.manageConfig`, never assigned to any other role by default) |
 
 ### Search — deferred
 `GET /api/v1/search?q=` — federated search across programs/beneficiaries/employees/volunteers/expenses/assets, each result tagged with entity type. Previously tracked under "Phase 6" here; deferred out of that phase by product decision (Phase 6 shipped as dashboard + reports only, per `docs/implementation-plan.md`) rather than built alongside it. Revisit scope/phase assignment separately.

@@ -83,4 +83,9 @@ enum PermissionEnum: string
     case CreateDataImport = 'data-imports.create';
     case ViewAnyDataQualityIssues = 'data-quality-issues.viewAny';
     case ManageDataQualityIssues = 'data-quality-issues.manage';
+
+    // Phase 7: Odoo integration (see docs/database-design.md §10)
+    case ViewOdooStatus = 'odoo.viewAny';
+    case RetryOdooSync = 'odoo.retry';
+    case ManageOdooConfig = 'odoo.manageConfig';
 }

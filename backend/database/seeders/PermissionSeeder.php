@@ -79,6 +79,8 @@ class PermissionSeeder extends Seeder
             // Phase 6: the executive dashboard's staffing/activity KPIs need these.
             PermissionEnum::ViewAnyEmployees, PermissionEnum::ViewAnyVolunteers,
             PermissionEnum::ViewAnyActivities,
+            // Phase 7: Management is the oversight role for the Odoo Integration dashboard.
+            PermissionEnum::ViewOdooStatus, PermissionEnum::RetryOdooSync,
         ],
     ];
 

@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             ProgramCategorySeeder::class,
             ExpenseCategorySeeder::class,
             ApprovalWorkflowSeeder::class,
+            OdooConnectionSeeder::class,
         ]);
     }
 }

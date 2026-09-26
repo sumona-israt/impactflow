@@ -20,7 +20,7 @@ class Expense extends Model implements BudgetConstrained, Workflowable
 
     protected $fillable = [
         'program_id', 'category_id', 'submitted_by', 'amount', 'currency',
-        'expense_date', 'description', 'status',
+        'expense_date', 'description', 'status', 'odoo_synced',
     ];
 
     protected function casts(): array
@@ -29,6 +29,7 @@ class Expense extends Model implements BudgetConstrained, Workflowable
             'expense_date' => 'date',
             'amount' => 'decimal:2',
             'status' => ExpenseStatus::class,
+            'odoo_synced' => 'boolean',
         ];
     }
 

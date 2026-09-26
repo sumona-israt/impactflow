@@ -4,6 +4,9 @@ namespace App\Actions\Workflow;
 
 use App\Contracts\BudgetConstrained;
 use App\Enums\WorkflowDecision;
+use App\Enums\WorkflowInstanceStatus;
+use App\Events\ExpenseApproved;
+use App\Models\Expense;
 use App\Models\User;
 use App\Models\WorkflowInstance;
 use App\Services\Audit\AuditLogger;
@@ -44,6 +47,13 @@ class RecordWorkflowActionAction
             $before,
             ['status' => $instance->status->value, 'step' => $instance->currentStep?->name],
         );
+
+        // Odoo integration hook (see docs/odoo-integration.md) — a named
+        // exception to this class's otherwise entity-agnostic design,
+        // mirroring the BudgetConstrained instanceof check above.
+        if ($instance->status === WorkflowInstanceStatus::Approved && $instance->entity instanceof Expense) {
+            ExpenseApproved::dispatch($instance->entity);
+        }
 
         return $instance;
     }

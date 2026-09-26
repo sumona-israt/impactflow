@@ -64,7 +64,12 @@ export const NAV_ITEMS: NavItem[] = [
       "data-quality-issues.viewAny",
     ],
   },
-  { label: "Odoo Integration", href: "/odoo", icon: Plug, plannedForPhase: 7 },
+  {
+    label: "Odoo Integration",
+    href: "/odoo",
+    icon: Plug,
+    requiresAnyPermission: ["odoo.viewAny"],
+  },
   {
     label: "Administration",
     href: "/admin/users",

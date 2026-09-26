@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\DepartmentController;
 use App\Http\Controllers\Api\V1\EmployeeController;
 use App\Http\Controllers\Api\V1\ExpenseCategoryController;
 use App\Http\Controllers\Api\V1\ExpenseController;
+use App\Http\Controllers\Api\V1\OdooController;
 use App\Http\Controllers\Api\V1\PermissionController;
 use App\Http\Controllers\Api\V1\ProgramCategoryController;
 use App\Http\Controllers\Api\V1\ProgramController;
@@ -119,5 +120,12 @@ Route::prefix('v1')->group(function () {
         Route::get('/reports', [ReportController::class, 'index']);
         Route::get('/reports/{type}', [ReportController::class, 'generate']);
         Route::get('/reports/{report}/download', [ReportController::class, 'download']);
+
+        // Odoo integration (see docs/database-design.md §10)
+        Route::get('/odoo/status', [OdooController::class, 'status']);
+        Route::get('/odoo/sync-logs', [OdooController::class, 'syncLogs']);
+        Route::post('/odoo/sync/{entity}/{id}/retry', [OdooController::class, 'retry']);
+        Route::get('/odoo/config', [OdooController::class, 'config']);
+        Route::put('/odoo/config', [OdooController::class, 'updateConfig']);
     });
 });

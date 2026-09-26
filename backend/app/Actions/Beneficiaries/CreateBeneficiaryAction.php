@@ -3,6 +3,7 @@
 namespace App\Actions\Beneficiaries;
 
 use App\Enums\BeneficiaryStatus;
+use App\Events\BeneficiaryRegistered;
 use App\Models\Beneficiary;
 use App\Services\Audit\AuditLogger;
 use App\Services\DataQuality\BeneficiaryDuplicateDetector;
@@ -26,6 +27,7 @@ class CreateBeneficiaryAction
 
         $this->auditLogger->logCreated($beneficiary, 'beneficiary.created');
         $this->duplicateDetector->detect($beneficiary);
+        BeneficiaryRegistered::dispatch($beneficiary);
 
         return $beneficiary;
     }

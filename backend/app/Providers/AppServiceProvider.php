@@ -2,11 +2,23 @@
 
 namespace App\Providers;
 
+use App\Contracts\OdooClientInterface;
 use App\Enums\RoleEnum;
+use App\Events\BeneficiaryRegistered;
+use App\Events\EmployeeCreated;
+use App\Events\ExpenseApproved;
+use App\Events\ProgramApproved;
+use App\Listeners\DispatchBeneficiaryRegisteredToOdoo;
+use App\Listeners\DispatchEmployeeCreatedToOdoo;
+use App\Listeners\DispatchExpenseApprovedToOdoo;
+use App\Listeners\DispatchProgramApprovedToOdoo;
 use App\Models\AuditLog;
 use App\Models\User;
 use App\Policies\AuditLogPolicy;
 use App\Policies\RolePolicy;
+use App\Services\Odoo\FakeOdooClient;
+use App\Services\Odoo\OdooJsonRpcClient;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Permission\Models\Role;
@@ -18,7 +30,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // ODOO_MODE picks the transport — see docs/odoo-integration.md §5.
+        $this->app->bind(OdooClientInterface::class, fn () => config('odoo.mode') === 'live'
+            ? $this->app->make(OdooJsonRpcClient::class)
+            : $this->app->make(FakeOdooClient::class));
     }
 
     /**
@@ -35,5 +50,12 @@ class AppServiceProvider extends ServiceProvider
         // Role and AuditLog aren't app-namespaced models, so they need explicit registration.
         Gate::policy(Role::class, RolePolicy::class);
         Gate::policy(AuditLog::class, AuditLogPolicy::class);
+
+        // Odoo integration (see docs/odoo-integration.md) — no EventServiceProvider
+        // in this app, so registered explicitly here like the policies above.
+        Event::listen(ProgramApproved::class, DispatchProgramApprovedToOdoo::class);
+        Event::listen(ExpenseApproved::class, DispatchExpenseApprovedToOdoo::class);
+        Event::listen(BeneficiaryRegistered::class, DispatchBeneficiaryRegisteredToOdoo::class);
+        Event::listen(EmployeeCreated::class, DispatchEmployeeCreatedToOdoo::class);
     }
 }

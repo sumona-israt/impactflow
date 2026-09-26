@@ -13,7 +13,7 @@ class Employee extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
-    protected $fillable = ['user_id', 'name', 'department_id', 'branch_id', 'position', 'joining_date', 'status'];
+    protected $fillable = ['user_id', 'name', 'department_id', 'branch_id', 'position', 'joining_date', 'status', 'odoo_employee_id'];
 
     protected function casts(): array
     {

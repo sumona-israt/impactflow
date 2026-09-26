@@ -18,7 +18,7 @@ class Program extends Model
     protected $fillable = [
         'name', 'description', 'category_id', 'manager_id', 'branch_id',
         'district', 'upazila', 'start_date', 'end_date', 'status',
-        'budget', 'target_beneficiaries', 'progress', 'created_by',
+        'budget', 'target_beneficiaries', 'progress', 'created_by', 'odoo_project_id',
     ];
 
     protected function casts(): array

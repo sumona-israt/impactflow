@@ -3,6 +3,7 @@
 namespace App\Actions\Employees;
 
 use App\Enums\EmployeeStatus;
+use App\Events\EmployeeCreated;
 use App\Models\Employee;
 use App\Services\Audit\AuditLogger;
 
@@ -16,6 +17,7 @@ class CreateEmployeeAction
         $employee = Employee::create(['status' => EmployeeStatus::Active, ...$attributes]);
 
         $this->auditLogger->logCreated($employee, 'employee.created');
+        EmployeeCreated::dispatch($employee);
 
         return $employee;
     }
