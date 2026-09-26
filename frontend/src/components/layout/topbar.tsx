@@ -90,34 +90,32 @@ export function Topbar({ user }: { user: AuthUser }) {
 
         {/* User dropdown */}
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 hover:bg-slate-50 rounded-lg px-2 py-1.5 transition-colors focus:outline-none group">
-              <Avatar className="size-7">
-                <AvatarFallback
-                  className="text-xs font-bold text-white"
-                  style={{ background: "#4f6bc7" }}
-                >
-                  {initials(user.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="hidden xl:block text-left">
-                <div className="text-[13px] font-semibold text-slate-800 group-hover:text-[#1e2a5e] leading-tight">
-                  {user.name}
-                </div>
-                <div className="text-[11px] text-slate-400 font-medium">
-                  {user.roles.map(roleLabel).join(", ") || "No role assigned"}
-                </div>
-              </div>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="text-slate-400 hidden xl:block"
+          <DropdownMenuTrigger className="flex items-center gap-2 hover:bg-slate-50 rounded-lg px-2 py-1.5 transition-colors focus:outline-none group">
+            <Avatar className="size-7">
+              <AvatarFallback
+                className="text-xs font-bold text-white"
+                style={{ background: "#4f6bc7" }}
               >
-                <path d="M7 10l5 5 5-5z" />
-              </svg>
-            </button>
+                {initials(user.name)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="hidden xl:block text-left">
+              <div className="text-[13px] font-semibold text-slate-800 group-hover:text-[#1e2a5e] leading-tight">
+                {user.name}
+              </div>
+              <div className="text-[11px] text-slate-400 font-medium">
+                {user.roles.map(roleLabel).join(", ") || "No role assigned"}
+              </div>
+            </div>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="text-slate-400 hidden xl:block"
+            >
+              <path d="M7 10l5 5 5-5z" />
+            </svg>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-60">
             <DropdownMenuLabel>
