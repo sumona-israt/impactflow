@@ -47,7 +47,7 @@ Only demo-appropriate fields are collected; no fields beyond what's listed in th
 
 **Simplified vs. the original design:**
 - `beneficiary_contacts` (a one-to-many emergency-contacts table) is dropped in favor of a flat `emergency_contact_name`/`emergency_contact_phone` pair — the product brief's field list (§10) asks for a single "Emergency Contact" field, not several.
-- `beneficiary_documents`, `data_quality_score`, and duplicate detection are deferred to Phase 5 (Data Management), where the data-quality engine and the generic document/attachment system genuinely belong — building a one-off document uploader just for beneficiaries now would need reworking once Phase 4 (expense receipts) and Phase 5 (bulk import) need the same capability. Phase 3's beneficiary form does not claim duplicate checking exists yet.
+- `beneficiary_documents`, `data_quality_score`, and duplicate detection were deferred to Phase 5 (Data Management). Duplicate detection and a data quality score now exist (§9) — `data_quality_score` itself stayed deferred in favor of computing the score on read (`GET /api/v1/data-quality/score`) rather than a stored, denormalized column nothing else reads. `beneficiary_documents` stays deferred past Phase 5 too — it wants a generic document/attachment system shared with expense receipts (§7) and import source files (§9), and no phase has built that generic layer yet; each phase so far has stored files with its own narrow, purpose-specific model instead.
 
 ## 5. Staff & volunteers — Phase 3 ✅
 
@@ -101,13 +101,22 @@ Generic, reusable — not hardcoded per entity. Expense is the first (and, in Ph
 - `return` always sends the instance back to the submitter (`workflow_instances.status = 'returned'`, entity status back to `draft`) rather than to a specific prior step. Multi-hop step navigation adds real complexity; "fix it and resubmit" (which starts a fresh instance) is both simpler and closer to how this works in practice.
 - Budget-vs-actual enforcement (product brief §14: "prevent approval when appropriate budget rules are violated") is checked once, at the *final* approval step (Finance), against `programs.budget` minus already-approved expenses for that program — Finance is the budget gatekeeper per the product brief's role descriptions, so earlier steps don't duplicate the check.
 
-## 9. Data management — Phase 5 ⏳
+## 9. Data management — Phase 5 ✅
 
 | Table | Key columns |
 |---|---|
-| `data_imports` | `id, entity_type, file_path, uploaded_by, status, total_rows, valid_rows, duplicate_rows, invalid_rows` |
-| `data_import_rows` | `id, data_import_id, row_number, raw_data (jsonb), status, errors (jsonb)` |
+| `data_imports` | `id, entity_type, file_path, original_name, uploaded_by, status, detected_headers (jsonb), column_mapping (jsonb), total_rows, valid_rows, duplicate_rows, invalid_rows, error_message` |
+| `data_import_rows` | `id, data_import_id, row_number, raw_data (jsonb), status, errors (jsonb), beneficiary_id` |
 | `data_quality_issues` | `id, entity_type, entity_id, issue_type, severity, description, status (open/ignored/resolved), detected_at, resolved_at, resolved_by` |
+
+**Decisions worth calling out:**
+- Scoped to `beneficiaries` only — the only entity with the `(full_name, phone)` duplicate index (§12) and the only one in the demo script (scenarios 2 & 4). `data_imports.entity_type` is a small enum (`ImportEntityType`) that picks an import *pipeline*, not a polymorphic morph target (a single import creates many records) — unlike `data_quality_issues.entity_type`/`entity_id`, which really is a morph pair, using the same FQCN convention as `workflow_instances` (§8).
+- Duplicate heuristic is intentionally simple: exact match after normalization (`trim`+`lowercase` on name, digits-only on phone). Candidates are matched case-insensitively on name in SQL, then filtered by normalized phone in PHP — this keeps the query portable across Postgres and SQLite without needing DB-specific phone-stripping functions. True fuzzy/similarity matching is out of scope.
+- Duplicates are flagged, not blocked, on both paths: ordinary beneficiary create/update (`BeneficiaryDuplicateDetector`, called from `CreateBeneficiaryAction`/`UpdateBeneficiaryAction`) and bulk-import commit (which reuses `CreateBeneficiaryAction` per row, so the detector and audit logging live in exactly one place for both).
+- `issue_type`/`severity` are plain strings, not enums — there's a single detector (`duplicate_beneficiary` / `warning`) this phase, so an enum with one case would just be a placeholder. Room to grow once more quality checks exist.
+- The import pipeline is staged: upload → map columns → preview (validates + detects duplicates into `data_import_rows`, replacing any prior staged rows on re-run) → commit. Invalid rows are never committed; fixing them means re-uploading, not editing a row in place (undemoed, avoided half-wiring).
+- Commit runs as a queued job (`ProcessDataImportCommit`) on the `worker` container already provisioned in `docker-compose.yml` — matching `docs/architecture.md`'s anticipated `Jobs/Import`. It authenticates as the uploader (`Auth::setUser`) purely for audit/`created_by` attribution, since the job runs outside any HTTP request.
+- Data quality score: `round(100 * (1 - open_issues / max(total_beneficiaries, 1)), 1)`, clamped to `[0, 100]` — simple and deterministic rather than a weighted/severity-based formula, since there's only one issue type today.
 
 ## 10. Odoo integration — Phase 7 ⏳
 

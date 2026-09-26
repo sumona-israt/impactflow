@@ -56,7 +56,7 @@ All SuperAdmin-only today (via granular permissions, not a hardcoded role check 
 `/api/v1/programs` (CRUD, search/filter/sort/paginate), `PATCH /api/v1/programs/{id}/status` (permission-gated direct status change — see `docs/database-design.md` §3 for why this isn't the generic workflow engine), `/api/v1/programs/{id}/beneficiaries` (enrolled list + enroll/unenroll), `/api/v1/programs/{id}/activities` (list + create). `/expenses` and `/budget` sub-resources move to Phase 4 alongside the Expense entity itself.
 
 ### Beneficiaries — Phase 3 ✅
-`/api/v1/beneficiaries` (CRUD, search/filter), `/api/v1/beneficiaries/{id}/enrollments` (list programs they're enrolled in). `/documents` and `/data-quality` are Phase 5, once the generic document/attachment system and the data-quality engine exist.
+`/api/v1/beneficiaries` (CRUD, search/filter), `/api/v1/beneficiaries/{id}/enrollments` (list programs they're enrolled in). `/documents` stays deferred — `beneficiary_documents` still isn't built (`docs/database-design.md` §4). Data quality issues live at the top-level `/api/v1/data-quality/issues` (see below), not nested under a beneficiary — one flat, filterable list rather than a per-entity sub-resource, since duplicate detection is currently the only issue type and it always names its own matched entity in the description.
 
 ### Employees & volunteers — Phase 3 ✅
 `/api/v1/employees`, `/api/v1/volunteers` (CRUD, HR/Admin Officer or Super Admin only).
@@ -84,8 +84,20 @@ All SuperAdmin-only today (via granular permissions, not a hardcoded role check 
 ### Workflows — Phase 4 ✅
 `GET /api/v1/workflows` (read-only visibility into seeded workflow definitions — no create/update endpoint yet, see `docs/database-design.md` §8), `POST /api/v1/workflow-instances/{instance}/actions` (body: `{action: "approve"|"reject"|"return", comment?}` — generic, works for any entity implementing `App\Contracts\Workflowable`, not just Expense).
 
-### Data quality & imports — Phase 5 ⏳
-`/api/v1/imports` (`POST` upload, `GET` history), `/api/v1/imports/{id}/mapping`, `/api/v1/imports/{id}/preview`, `/api/v1/imports/{id}/commit`, `/api/v1/data-quality/issues` (list/resolve/ignore), `/api/v1/data-quality/score`.
+### Data quality & imports — Phase 5 ✅
+| Method | Path | Notes |
+|---|---|---|
+| POST | `/api/v1/imports` | upload a CSV/XLSX (multipart), detects and returns column headers |
+| GET | `/api/v1/imports` | list past imports, paginated |
+| GET | `/api/v1/imports/{id}` | view one import's status/counts |
+| PUT | `/api/v1/imports/{id}/mapping` | save the column → Beneficiary field mapping |
+| POST | `/api/v1/imports/{id}/preview` | validate + detect duplicates, staging `data_import_rows` |
+| GET | `/api/v1/imports/{id}/preview` | paginated staged rows (`?filter[status]=`) |
+| POST | `/api/v1/imports/{id}/commit` | queues `ProcessDataImportCommit`; only valid once previewed |
+| GET | `/api/v1/data-quality/issues` | list/filter (`?filter[status]=`) |
+| POST | `/api/v1/data-quality/issues/{id}/resolve` | mark resolved |
+| POST | `/api/v1/data-quality/issues/{id}/ignore` | mark ignored |
+| GET | `/api/v1/data-quality/score` | `{score, total_beneficiaries, open_issues}` — see `docs/database-design.md` §9 for the formula |
 
 ### Reports — Phase 6 ⏳
 `/api/v1/reports/program-performance`, `/api/v1/reports/beneficiaries`, `/api/v1/reports/financial`, `/api/v1/reports/data-quality`, each with `?format=csv|xlsx|pdf`.

@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\V1\AuditLogController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BeneficiaryController;
 use App\Http\Controllers\Api\V1\BranchController;
+use App\Http\Controllers\Api\V1\DataImportController;
+use App\Http\Controllers\Api\V1\DataQualityIssueController;
 use App\Http\Controllers\Api\V1\DepartmentController;
 use App\Http\Controllers\Api\V1\EmployeeController;
 use App\Http\Controllers\Api\V1\ExpenseCategoryController;
@@ -95,5 +97,19 @@ Route::prefix('v1')->group(function () {
         // Workflow engine (generic — see docs/database-design.md §8)
         Route::get('/workflows', [WorkflowController::class, 'index']);
         Route::post('/workflow-instances/{instance}/actions', [WorkflowInstanceController::class, 'act']);
+
+        // Data imports & quality (see docs/database-design.md §9)
+        Route::post('/imports', [DataImportController::class, 'store']);
+        Route::get('/imports', [DataImportController::class, 'index']);
+        Route::get('/imports/{dataImport}', [DataImportController::class, 'show']);
+        Route::put('/imports/{dataImport}/mapping', [DataImportController::class, 'updateMapping']);
+        Route::post('/imports/{dataImport}/preview', [DataImportController::class, 'preview']);
+        Route::get('/imports/{dataImport}/preview', [DataImportController::class, 'showPreview']);
+        Route::post('/imports/{dataImport}/commit', [DataImportController::class, 'commit']);
+
+        Route::get('/data-quality/issues', [DataQualityIssueController::class, 'index']);
+        Route::post('/data-quality/issues/{dataQualityIssue}/resolve', [DataQualityIssueController::class, 'resolve']);
+        Route::post('/data-quality/issues/{dataQualityIssue}/ignore', [DataQualityIssueController::class, 'ignore']);
+        Route::get('/data-quality/score', [DataQualityIssueController::class, 'score']);
     });
 });

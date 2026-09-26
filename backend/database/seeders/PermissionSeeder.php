@@ -35,6 +35,8 @@ class PermissionSeeder extends Seeder
             PermissionEnum::ViewAnyProgramCategories,
             // Reviews expenses as workflow step 1 (role_required, not a permission — §8)
             PermissionEnum::ViewAnyExpenses, PermissionEnum::ViewExpense,
+            PermissionEnum::ViewAnyDataImports, PermissionEnum::CreateDataImport,
+            PermissionEnum::ViewAnyDataQualityIssues, PermissionEnum::ManageDataQualityIssues,
         ],
         RoleEnum::FinanceOfficer->value => [
             PermissionEnum::ViewAnyPrograms, PermissionEnum::ViewProgram,
@@ -55,6 +57,8 @@ class PermissionSeeder extends Seeder
             PermissionEnum::ViewAnyExpenses, PermissionEnum::ViewExpense,
             PermissionEnum::CreateExpense, PermissionEnum::UpdateExpense,
             PermissionEnum::ViewAnyExpenseCategories,
+            PermissionEnum::ViewAnyDataImports, PermissionEnum::CreateDataImport,
+            PermissionEnum::ViewAnyDataQualityIssues, PermissionEnum::ManageDataQualityIssues,
         ],
         RoleEnum::HrAdminOfficer->value => [
             PermissionEnum::ViewAnyEmployees, PermissionEnum::CreateEmployee, PermissionEnum::UpdateEmployee,
@@ -71,6 +75,7 @@ class PermissionSeeder extends Seeder
             PermissionEnum::ViewAnyProgramCategories,
             PermissionEnum::ViewAnyExpenses, PermissionEnum::ViewExpense,
             PermissionEnum::ViewAnyAssets, PermissionEnum::ViewAnyWorkflows,
+            PermissionEnum::ViewAnyDataImports, PermissionEnum::ViewAnyDataQualityIssues,
         ],
     ];
 

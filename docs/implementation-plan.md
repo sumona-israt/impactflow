@@ -23,7 +23,7 @@ This document is the single source of truth for **build order, current status, a
 | 2 | RBAC | ✅ Done | Policies/Gates on users, roles & permissions; `AuditLogger` foundation used by every mutation in this phase; permission-driven admin UI (Users, Roles & Permissions, Audit Logs), tested end-to-end incl. a real cross-service auth bug found and fixed (see architecture.md §3) |
 | 3 | Core NGO Operations | ✅ Done | Programs (with permission-gated status transitions), beneficiaries (list/detail with sensitive-field redaction), employees, volunteers, activities + attendance, org lookups (departments/branches/categories) — full CRUD UI, 41 backend tests, verified end-to-end via `docker compose`. See `docs/database-design.md` §§2-6 for scope simplifications made while implementing (program_budgets/program_locations/beneficiary_contacts/beneficiary_documents deferred, `odoo_*_id` columns deferred to Phase 7) |
 | 4 | Finance & Assets | ✅ Done | Generic approval workflow engine (first used by Expense), expenses with receipt attachments + two-step approval chain, budget-vs-actual enforcement at final approval, assets + assignment/return tracking — full CRUD UI, 13 new backend tests (55 total), migrations/seeders verified clean, lint clean. See `docs/database-design.md` §§7-8 for scope decisions |
-| 5 | Data Management | ⏳ Not started | CSV/Excel import pipeline, duplicate detection, data quality engine |
+| 5 | Data Management | ✅ Done | CSV/Excel import pipeline (upload → map columns → preview → queued commit), duplicate detection (shared by manual entry and bulk import), data quality dashboard (list/resolve/ignore, score) — scoped to Beneficiaries, 15 new backend tests (70 total), migrations/seeders verified clean, lint + type-check clean. See `docs/database-design.md` §9 for scope decisions |
 | 6 | Analytics | ⏳ Not started | Executive dashboard, KPIs, charts, report generation/export |
 | 7 | Odoo Integration | ⏳ Not started | OdooClient/Service/Sync, mock mode, sync dashboard, retry handling |
 | 8 | Notifications | ⏳ Not started | Email + in-app notifications, workflow alerts |
@@ -73,4 +73,4 @@ These are the demonstrations the finished system should support (see `docs/demo/
 4. Admin uploads an Excel beneficiary list → column mapping → validation/duplicate report → commit → data quality dashboard updates.
 5. Admin opens the Odoo Integration dashboard → reviews sync logs → simulates an Odoo outage → retries → sync recovers.
 
-None of these are functional yet beyond their Phase 1 prerequisites (auth, roles).
+Scenarios 2 (duplicate detection on registration) and 4 (bulk import) are functional as of Phase 5. Scenario 3 is functional up to "Finance approves" (Phase 4) — the Odoo sync step is still Phase 7. Scenarios 1 and 5 remain Phase-1-only.

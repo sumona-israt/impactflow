@@ -62,7 +62,7 @@ backend/
     └── Unit/
 ```
 
-**Scaffolding policy:** a directory above is only populated with real code when a phase genuinely needs it. `Repositories/` is intentionally absent — generic Eloquent CRUD repositories are an anti-pattern here; the one real gateway abstraction the project needs is `Services/Odoo/OdooClient`, which already has a home. `Policies/`, `Livewire/`, `Events/Listeners` gain their first files in Phase 2 (RBAC) and Phase 4 (workflow engine) respectively — not stubbed empty in Phase 1.
+**Scaffolding policy:** a directory above is only populated with real code when a phase genuinely needs it. `Repositories/` is intentionally absent — generic Eloquent CRUD repositories are an anti-pattern here; the one real gateway abstraction the project needs is `Services/Odoo/OdooClient`, which already has a home. `Policies/`, `Livewire/`, `Events/Listeners` gain their first files in Phase 2 (RBAC) and Phase 4 (workflow engine) respectively — not stubbed empty in Phase 1. `Services/DataQuality/`, `Services/Import/`, and `Jobs/Import/` are populated as of Phase 5 (duplicate detection, the spreadsheet reader, and the queued commit job).
 
 ## 3. Authentication & session architecture
 

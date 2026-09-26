@@ -5,11 +5,15 @@ namespace App\Actions\Beneficiaries;
 use App\Enums\BeneficiaryStatus;
 use App\Models\Beneficiary;
 use App\Services\Audit\AuditLogger;
+use App\Services\DataQuality\BeneficiaryDuplicateDetector;
 use Illuminate\Support\Facades\Auth;
 
 class CreateBeneficiaryAction
 {
-    public function __construct(private readonly AuditLogger $auditLogger) {}
+    public function __construct(
+        private readonly AuditLogger $auditLogger,
+        private readonly BeneficiaryDuplicateDetector $duplicateDetector,
+    ) {}
 
     public function execute(array $attributes): Beneficiary
     {
@@ -21,6 +25,7 @@ class CreateBeneficiaryAction
         ]);
 
         $this->auditLogger->logCreated($beneficiary, 'beneficiary.created');
+        $this->duplicateDetector->detect($beneficiary);
 
         return $beneficiary;
     }

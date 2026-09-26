@@ -77,4 +77,10 @@ enum PermissionEnum: string
 
     // Phase 4: workflows (read-only visibility — see docs/database-design.md §8)
     case ViewAnyWorkflows = 'workflows.viewAny';
+
+    // Phase 5: data imports & quality (see docs/database-design.md §9)
+    case ViewAnyDataImports = 'data-imports.viewAny';
+    case CreateDataImport = 'data-imports.create';
+    case ViewAnyDataQualityIssues = 'data-quality-issues.viewAny';
+    case ManageDataQualityIssues = 'data-quality-issues.manage';
 }

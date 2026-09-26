@@ -46,7 +46,12 @@ export const NAV_ITEMS: NavItem[] = [
     icon: Banknote,
     requiresAnyPermission: ["expenses.viewAny", "assets.viewAny"],
   },
-  { label: "Data Quality", href: "/data-quality", icon: Database, plannedForPhase: 5 },
+  {
+    label: "Data Quality",
+    href: "/data-quality",
+    icon: Database,
+    requiresAnyPermission: ["data-imports.viewAny", "data-quality-issues.viewAny"],
+  },
   { label: "Odoo Integration", href: "/odoo", icon: Plug, plannedForPhase: 7 },
   {
     label: "Administration",
