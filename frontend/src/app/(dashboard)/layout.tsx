@@ -11,11 +11,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen" style={{ background: "#f8fafc" }}>
       <Sidebar user={user} />
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         <Topbar user={user} />
-        <main className="flex-1 bg-muted/20 p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6 md:p-8" style={{ background: "#f8fafc" }}>
+          {children}
+        </main>
       </div>
     </div>
   );

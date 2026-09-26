@@ -7,9 +7,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-sans: var(--font-inter), 'Inter', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace;
+  --font-heading: var(--font-inter), 'Inter', system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -46,42 +46,70 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ImpactFlow Enterprise ERP color tokens */
+  --color-erp-navy: #1e2a5e;
+  --color-erp-indigo: #2d4a9e;
+  --color-erp-slate-indigo: #4f6bc7;
+  --color-erp-slate: #64748b;
+  --color-erp-canvas: #f8fafc;
+  --color-erp-surface: #ffffff;
+  --color-erp-border: #e2e8f0;
+  --color-erp-border-focus: #cbd5e1;
+  --color-erp-text: #0f172a;
+  --color-erp-text-muted: #475569;
+  --color-erp-success: #047857;
+  --color-erp-warning: #b45309;
+  --color-erp-danger: #be123c;
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  /* ImpactFlow Enterprise — Deep Navy / Indigo palette */
+  --background: oklch(0.992 0.004 270);          /* #f8f9ff */
+  --foreground: oklch(0.11 0.035 250);            /* #0b1c30 */
+  --card: oklch(1 0 0);                           /* #ffffff */
+  --card-foreground: oklch(0.11 0.035 250);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.11 0.035 250);
+
+  /* Primary = Midnight Navy #061449 */
+  --primary: oklch(0.22 0.09 268);
+  --primary-foreground: oklch(1 0 0);
+
+  /* Secondary = Indigo #3e59ae */
+  --secondary: oklch(0.92 0.01 270);
+  --secondary-foreground: oklch(0.22 0.09 268);
+
+  --muted: oklch(0.94 0.008 270);
+  --muted-foreground: oklch(0.45 0.03 260);
+
+  --accent: oklch(0.94 0.008 270);
+  --accent-foreground: oklch(0.22 0.09 268);
+
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  /* Validated categorical/sequential palette (dataviz skill) — chart-1 blue, chart-2 orange. */
+
+  --border: oklch(0.892 0.015 270);               /* #e2e8f0 */
+  --input: oklch(0.892 0.015 270);
+  --ring: oklch(0.52 0.12 268);                   /* #4f6bc7 */
+
+  /* Charts */
   --chart-1: #2a78d6;
-  --chart-2: #eb6834;
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --chart-2: #4f6bc7;
+  --chart-3: #0d9488;
+  --chart-4: #f59e0b;
+  --chart-5: oklch(0.439 0 0);
+
+  --radius: 0.5rem;
+
+  /* Sidebar = Deep Navy #1e2a5e */
+  --sidebar: #1e2a5e;
+  --sidebar-foreground: oklch(0.96 0.01 270);
+  --sidebar-primary: #4f6bc7;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(255,255,255,0.10);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255,255,255,0.12);
+  --sidebar-ring: #4f6bc7;
 }
 
 .dark {
@@ -103,9 +131,8 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
-  /* Same validated palette, dark-surface steps (dataviz skill). */
   --chart-1: #3987e5;
-  --chart-2: #d95926;
+  --chart-2: #6b85d5;
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
@@ -125,8 +152,63 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+    font-feature-settings: "cv05" 1, "cv08" 1;
   }
   html {
     @apply font-sans;
+  }
+
+  /* Numeric columns use tabular figures */
+  .font-tabular {
+    font-feature-settings: "tnum" 1;
+  }
+}
+
+/* ERP enterprise custom utilities */
+@layer utilities {
+  .erp-card {
+    @apply bg-white border border-slate-200 rounded-xl shadow-[0_1px_2px_0_rgba(15,23,42,0.04)];
+  }
+
+  .erp-card-hover {
+    @apply hover:border-slate-300 hover:shadow-[0_4px_6px_-1px_rgba(30,42,94,0.06),0_2px_4px_-2px_rgba(30,42,94,0.04)] transition-all duration-150;
+  }
+
+  .erp-input {
+    @apply h-[38px] bg-white border border-slate-300 rounded text-sm text-slate-900 placeholder:text-slate-400
+           hover:border-slate-400
+           focus:border-[#2d4a9e] focus:ring-3 focus:ring-[#4f6bc7]/20
+           transition-colors duration-150;
+  }
+
+  .erp-btn-primary {
+    @apply h-10 px-4 bg-[#1e2a5e] hover:bg-[#2d4a9e] active:bg-[#141c3e]
+           text-white font-semibold text-sm rounded
+           shadow-sm transition-colors duration-150
+           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4f6bc7];
+  }
+
+  .erp-btn-secondary {
+    @apply h-10 px-4 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400
+           text-[#1e2a5e] font-semibold text-sm rounded
+           transition-colors duration-150
+           focus:outline-none focus:ring-2 focus:ring-[#4f6bc7];
+  }
+
+  .erp-focus-ring {
+    box-shadow: 0 0 0 1px #ffffff, 0 0 0 3px #4f6bc7;
+  }
+
+  .erp-sidebar-nav-item {
+    @apply flex items-center gap-2.5 px-3 py-2 rounded-lg
+           text-slate-300 hover:text-white hover:bg-white/10
+           text-sm font-medium transition-colors duration-150;
+  }
+
+  .erp-sidebar-nav-active {
+    @apply flex items-center gap-2.5 px-3 py-2 rounded-lg
+           bg-[#4f6bc7] text-white
+           text-sm font-semibold;
   }
 }
