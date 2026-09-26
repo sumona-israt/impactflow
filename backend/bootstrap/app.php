@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AddRequestContext;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,6 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
+        $middleware->throttleApi('api');
+        $middleware->api(append: [AddRequestContext::class]);
 
         // This app has no named "login" route (the login page is the
         // Next.js frontend's /login, served by nginx, not Laravel) — without

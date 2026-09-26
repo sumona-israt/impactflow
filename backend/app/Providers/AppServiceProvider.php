@@ -23,9 +23,13 @@ use App\Policies\AuditLogPolicy;
 use App\Policies\RolePolicy;
 use App\Services\Odoo\FakeOdooClient;
 use App\Services\Odoo\OdooJsonRpcClient;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
 class AppServiceProvider extends ServiceProvider
@@ -68,5 +72,14 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(WorkflowInstanceStarted::class, [NotifyWorkflowParticipants::class, 'handleStarted']);
         Event::listen(WorkflowInstanceActed::class, [NotifyWorkflowParticipants::class, 'handleActed']);
         Event::listen(ProgramSubmittedForApproval::class, NotifyManagementOfProgramSubmission::class);
+
+        // Rate limiting (see docs/implementation-plan.md Phase 9) — no
+        // RouteServiceProvider exists in Laravel 11+ to define these in,
+        // so registered here like everything else above.
+        RateLimiter::for('login', fn (Request $request) => Limit::perMinute(5)
+            ->by(Str::lower((string) $request->input('email')).'|'.$request->ip()));
+
+        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(120)
+            ->by($request->user()?->id ?: $request->ip()));
     }
 }

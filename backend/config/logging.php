@@ -1,5 +1,6 @@
 <?php
 
+use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -63,6 +64,10 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+            // Structured JSON lines (see docs/implementation-plan.md Phase 9) —
+            // Context::add() data (request_id, user_id; see
+            // App\Http\Middleware\AddRequestContext) rides along automatically.
+            'formatter' => JsonFormatter::class,
         ],
 
         'daily' => [
@@ -71,6 +76,7 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
+            'formatter' => JsonFormatter::class,
         ],
 
         'slack' => [

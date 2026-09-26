@@ -10,7 +10,7 @@ PostgreSQL, normalized relational schema. UUID primary keys for entities referen
 |---|---|---|
 | `users` | ✅ | Laravel default + `phone`, `is_active`, `last_login_at` |
 | `roles`, `permissions`, `model_has_roles`, `model_has_permissions`, `role_has_permissions` | ✅ | Provided by `spatie/laravel-permission`; seeded with the six roles from `App\Enums\RoleEnum` (SuperAdmin, ProgramManager, FinanceOfficer, FieldOfficer, HrAdminOfficer, Management). Permissions defined in `App\Enums\PermissionEnum` — Phase 2 only defines `users.*`/`roles.*`/`audit-logs.viewAny` (the entities that exist so far); Phase 3+ modules add their own as they land |
-| `audit_logs` | ✅ | `id, user_id (nullOnDelete), action, entity_type, entity_id, old_values (json, sensitive fields redacted), new_values (json, redacted), ip_address, user_agent, created_at` — immutable, written only via `App\Services\Audit\AuditLogger` |
+| `audit_logs` | ✅ | `id, user_id (nullOnDelete), action, entity_type, entity_id, old_values (json, sensitive fields redacted), new_values (json, redacted), ip_address, user_agent, created_at` — immutable, written only via `App\Services\Audit\AuditLogger`. Redaction is a flat, global field-name deny-list (`AuditLogger::REDACTED_FIELDS`) — `password`/`remember_token` since Phase 2, plus `phone`/`date_of_birth`/`address`/`emergency_contact_name`/`emergency_contact_phone` since Phase 9, once an audit found the list hadn't kept pace with the PII fields this doc already claimed were redacted (see `docs/implementation-plan.md` Phase 9). Global by field name, not per-model config, so it also redacts `users.phone` consistently |
 
 ## 2. Organization — Phase 3 ✅
 

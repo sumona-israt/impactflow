@@ -24,6 +24,15 @@ class AuditLogger
     private const REDACTED_FIELDS = [
         'password',
         'remember_token',
+        // PII — see docs/database-design.md §1/§4 ("sensitive fields... redacted").
+        // A flat, global list rather than per-model config, matching this
+        // class's entity-agnostic design; redacting `phone` also covers
+        // User.phone consistently, an acceptable trade-off for simplicity.
+        'phone',
+        'date_of_birth',
+        'address',
+        'emergency_contact_name',
+        'emergency_contact_phone',
     ];
 
     public function log(string $action, string $entityType, string|int|null $entityId, array $old = [], array $new = []): AuditLog

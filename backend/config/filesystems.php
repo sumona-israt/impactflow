@@ -33,11 +33,24 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Never web-served: every real download (expense attachments,
+            // reports, Odoo-adjacent files) goes through an authenticated
+            // controller route that re-checks Gate::authorize per request
+            // (see docs/database-design.md §12). Leaving this `true` makes
+            // Laravel auto-register an unmiddlewared GET/PUT storage/{path}
+            // signed-URL route underneath all of that for no functional
+            // benefit, since nothing here ever calls ->url()/->temporaryUrl()
+            // against this disk (see docs/implementation-plan.md Phase 9).
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],
 
+        // Unused — nothing in this app stores anything here today. Left in
+        // place since it's Laravel's own default, not something this app
+        // added, but think twice before reaching for it: anything written
+        // here is world-readable by design (`visibility: public`), unlike
+        // every other disk in this app.
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
