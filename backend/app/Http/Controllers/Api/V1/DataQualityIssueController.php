@@ -6,7 +6,6 @@ use App\Enums\DataQualityIssueStatus;
 use App\Enums\PermissionEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DataQualityIssueResource;
-use App\Models\Beneficiary;
 use App\Models\DataQualityIssue;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -64,16 +63,6 @@ class DataQualityIssueController extends Controller
     {
         Gate::authorize(PermissionEnum::ViewAnyDataQualityIssues->value);
 
-        $totalBeneficiaries = Beneficiary::count();
-        $openIssues = DataQualityIssue::where('status', DataQualityIssueStatus::Open)->count();
-
-        // See docs/database-design.md §9 for the formula's reasoning.
-        $score = round(100 * (1 - $openIssues / max($totalBeneficiaries, 1)), 1);
-
-        return ApiResponse::data([
-            'score' => max(0.0, min(100.0, $score)),
-            'total_beneficiaries' => $totalBeneficiaries,
-            'open_issues' => $openIssues,
-        ]);
+        return ApiResponse::data(DataQualityIssue::computeScore());
     }
 }

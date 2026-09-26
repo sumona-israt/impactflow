@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\AuditLogController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BeneficiaryController;
 use App\Http\Controllers\Api\V1\BranchController;
+use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DataImportController;
 use App\Http\Controllers\Api\V1\DataQualityIssueController;
 use App\Http\Controllers\Api\V1\DepartmentController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Api\V1\ExpenseController;
 use App\Http\Controllers\Api\V1\PermissionController;
 use App\Http\Controllers\Api\V1\ProgramCategoryController;
 use App\Http\Controllers\Api\V1\ProgramController;
+use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\VolunteerController;
@@ -111,5 +113,11 @@ Route::prefix('v1')->group(function () {
         Route::post('/data-quality/issues/{dataQualityIssue}/resolve', [DataQualityIssueController::class, 'resolve']);
         Route::post('/data-quality/issues/{dataQualityIssue}/ignore', [DataQualityIssueController::class, 'ignore']);
         Route::get('/data-quality/score', [DataQualityIssueController::class, 'score']);
+
+        // Analytics: dashboard + reports (see docs/database-design.md §11)
+        Route::get('/dashboard/kpis', [DashboardController::class, 'kpis']);
+        Route::get('/reports', [ReportController::class, 'index']);
+        Route::get('/reports/{type}', [ReportController::class, 'generate']);
+        Route::get('/reports/{report}/download', [ReportController::class, 'download']);
     });
 });

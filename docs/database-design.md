@@ -126,13 +126,20 @@ Generic, reusable — not hardcoded per entity. Expense is the first (and, in Ph
 | `odoo_mappings` | `id, entity_type, local_id, odoo_model, odoo_id` |
 | `odoo_sync_logs` | `id, entity, local_id, odoo_id nullable, operation, status, request_payload (jsonb), response_payload (jsonb), error_message, retry_count, request_time, response_time` |
 
-## 11. Reporting & notifications — Phase 6 / 8 ⏳
+## 11. Reporting & notifications — Phase 6 ✅ / Phase 8 ⏳
 
 | Table | Key columns |
 |---|---|
-| `reports` | `id, type, parameters (jsonb), generated_by, generated_at` |
-| `report_exports` | `id, report_id, format (csv/xlsx/pdf), file_path` |
-| `notifications` | Laravel's default notifications table (polymorphic) |
+| `reports` | `id (uuid), type, format, parameters (jsonb), file_path, generated_by, generated_at` |
+| `notifications` | Laravel's default notifications table (polymorphic) — Phase 8 |
+
+**Decisions worth calling out:**
+- No separate `report_exports` table. The original sketch above had one `reports` row potentially fanning out to multiple format exports; in the shipped UX (`?format=csv|xlsx|pdf` chosen up front, one file produced and downloaded per request), a `reports` row and its file are created atomically in the same request — there's never a moment where one row has two different-format children. `format`/`file_path` are folded directly onto `reports`, matching how `expense_attachments` folds `file_path` onto its own row rather than a generic "exports" abstraction.
+- No `status` column, no queue. Report generation is one bounded SQL query (a few hundred rows at most, per the product's demo scale) plus one in-memory file write — the same shape as `DataQualityIssueController::score()` (Phase 5), which is synchronous. Every `reports` row that exists succeeded; a failed generation raises mid-request and never persists a row. Queuing (as `data_imports` commits are, via `ProcessDataImportCommit`) would add a job class and a polling UX purely to track a "pending" state that would never realistically last long enough to matter at this scale.
+- Data layer: one `ReportBuilder` per `App\Enums\ReportType` (`App\Services\Reports\Builders\*`) turns filtered Eloquent queries into a shared `ReportDataset` DTO (ordered columns + pre-formatted string rows), consumed by two writers — `SpreadsheetReportWriter` (PhpSpreadsheet's Writer side, the counterpart to the Phase 5 reader-only `DataImportSpreadsheetReader`) for csv/xlsx, and `PdfReportWriter` (raw `dompdf/dompdf` — no Laravel wrapper package is installed — rendering one generic Blade view) for pdf. Builders pre-format every value to a display string so the writers stay dumb formatters with no per-report-type branching.
+- Authorization reuses existing entity permissions rather than inventing report-specific ones: `App\Enums\ReportType::permission()` maps each of the 4 types to the permission that already governs viewing that entity (`programs.viewAny`, `beneficiaries.view`, `expenses.viewAny`, `data-quality-issues.viewAny`). Report history listing and re-download re-check the same per-type Gate rather than a blanket `reports.viewAny`.
+- The executive dashboard (`GET /api/v1/dashboard/kpis`) needs no dedicated permission either — each of its 7 sections (programs, beneficiaries, staffing, activities, finance, data quality, workflows) is included in the response only if the caller holds that section's existing entity permission, omitted entirely (never a fabricated zero) otherwise. This mirrors `frontend/src/components/layout/nav-items.ts`'s `requiresAnyPermission` composition, applied server-side. One default-permission-set update rode along with this: `Management`'s seeded defaults (`PermissionSeeder`) gained `employees.viewAny`/`volunteers.viewAny`/`activities.viewAny` — it's the role meant to consume the dashboard, and previously couldn't see 3 of its sections out of the box.
+- Beneficiary enrollment-by-month and any other date-bucketed series are grouped in PHP (`Carbon::format('Y-m')`), not SQL date functions — the same portability rule already established for the duplicate-detection query in §9, since tests run on SQLite and production runs on Postgres.
 
 ## 12. Indexing & integrity conventions
 

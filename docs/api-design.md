@@ -99,14 +99,23 @@ All SuperAdmin-only today (via granular permissions, not a hardcoded role check 
 | POST | `/api/v1/data-quality/issues/{id}/ignore` | mark ignored |
 | GET | `/api/v1/data-quality/score` | `{score, total_beneficiaries, open_issues}` — see `docs/database-design.md` §9 for the formula |
 
-### Reports — Phase 6 ⏳
-`/api/v1/reports/program-performance`, `/api/v1/reports/beneficiaries`, `/api/v1/reports/financial`, `/api/v1/reports/data-quality`, each with `?format=csv|xlsx|pdf`.
+### Dashboard — Phase 6 ✅
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/api/v1/dashboard/kpis` | Executive KPIs + chart series, permission-gated per section — see `docs/database-design.md` §11 |
+
+### Reports — Phase 6 ✅
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/api/v1/reports` | List past generated reports, paginated, filtered to the caller's permitted report types |
+| GET | `/api/v1/reports/{type}?format=csv\|xlsx\|pdf` | Generate a report (`type` one of `program-performance`, `beneficiaries`, `financial`, `data-quality`) and stream the file back in the same request; also accepts type-specific filters (e.g. `program_id`, `date_from`/`date_to`) |
+| GET | `/api/v1/reports/{report}/download` | Re-download a previously generated report |
 
 ### Odoo — Phase 7 ⏳
 `/api/v1/odoo/status`, `/api/v1/odoo/sync-logs`, `/api/v1/odoo/sync/{entity}/{id}/retry`, `/api/v1/odoo/config` (SuperAdmin).
 
-### Search — Phase 6 ⏳
-`GET /api/v1/search?q=` — federated search across programs/beneficiaries/employees/volunteers/expenses/assets, each result tagged with entity type.
+### Search — deferred
+`GET /api/v1/search?q=` — federated search across programs/beneficiaries/employees/volunteers/expenses/assets, each result tagged with entity type. Previously tracked under "Phase 6" here; deferred out of that phase by product decision (Phase 6 shipped as dashboard + reports only, per `docs/implementation-plan.md`) rather than built alongside it. Revisit scope/phase assignment separately.
 
 ## 3. OpenAPI documentation
 

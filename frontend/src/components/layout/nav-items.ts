@@ -3,6 +3,7 @@ import {
   Banknote,
   ClipboardList,
   Database,
+  FileText,
   LayoutDashboard,
   Plug,
   ShieldCheck,
@@ -51,6 +52,17 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/data-quality",
     icon: Database,
     requiresAnyPermission: ["data-imports.viewAny", "data-quality-issues.viewAny"],
+  },
+  {
+    label: "Reports",
+    href: "/reports",
+    icon: FileText,
+    requiresAnyPermission: [
+      "programs.viewAny",
+      "beneficiaries.view",
+      "expenses.viewAny",
+      "data-quality-issues.viewAny",
+    ],
   },
   { label: "Odoo Integration", href: "/odoo", icon: Plug, plannedForPhase: 7 },
   {

@@ -76,6 +76,9 @@ class PermissionSeeder extends Seeder
             PermissionEnum::ViewAnyExpenses, PermissionEnum::ViewExpense,
             PermissionEnum::ViewAnyAssets, PermissionEnum::ViewAnyWorkflows,
             PermissionEnum::ViewAnyDataImports, PermissionEnum::ViewAnyDataQualityIssues,
+            // Phase 6: the executive dashboard's staffing/activity KPIs need these.
+            PermissionEnum::ViewAnyEmployees, PermissionEnum::ViewAnyVolunteers,
+            PermissionEnum::ViewAnyActivities,
         ],
     ];
 
