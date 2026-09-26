@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -118,15 +119,17 @@ export function Topbar({ user }: { user: AuthUser }) {
             </svg>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-60">
-            <DropdownMenuLabel>
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-semibold text-slate-800">{user.name}</span>
-                <span className="text-xs font-normal text-slate-500">{user.email}</span>
-                <span className="text-xs font-normal text-slate-500">
-                  {user.roles.map(roleLabel).join(", ") || "No role assigned"}
-                </span>
-              </div>
-            </DropdownMenuLabel>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-semibold text-slate-800">{user.name}</span>
+                  <span className="text-xs font-normal text-slate-500">{user.email}</span>
+                  <span className="text-xs font-normal text-slate-500">
+                    {user.roles.map(roleLabel).join(", ") || "No role assigned"}
+                  </span>
+                </div>
+              </DropdownMenuLabel>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onSelect={handleLogout}

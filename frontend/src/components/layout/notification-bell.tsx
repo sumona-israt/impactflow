@@ -8,6 +8,7 @@ import { buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -57,21 +58,23 @@ export function NotificationBell() {
         )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-80">
-        <DropdownMenuLabel className="flex items-center justify-between">
-          <span>Notifications</span>
-          {unreadCount > 0 && (
-            <button
-              type="button"
-              className="text-xs font-normal text-primary hover:underline"
-              onClick={async () => {
-                await markAllNotificationsRead();
-                invalidate();
-              }}
-            >
-              Mark all read
-            </button>
-          )}
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="flex items-center justify-between">
+            <span>Notifications</span>
+            {unreadCount > 0 && (
+              <button
+                type="button"
+                className="text-xs font-normal text-primary hover:underline"
+                onClick={async () => {
+                  await markAllNotificationsRead();
+                  invalidate();
+                }}
+              >
+                Mark all read
+              </button>
+            )}
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         {recent.length === 0 && (
           <div className="px-2 py-4 text-center text-sm text-muted-foreground">No notifications yet.</div>
