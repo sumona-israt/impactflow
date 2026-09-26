@@ -28,8 +28,8 @@ export async function toApiError(response: Response): Promise<ApiError> {
   }
 
   const message =
-    (body as { message?: string } | null)?.message ??
-    response.statusText ??
+    (body as { message?: string } | null)?.message ||
+    response.statusText ||
     "Something went wrong.";
 
   const errors = (body as { errors?: Record<string, string[]> } | null)?.errors ?? {};

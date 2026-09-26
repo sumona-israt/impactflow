@@ -99,6 +99,18 @@ test('program status can only move through allowed transitions', function () {
     expect(AuditLog::where('action', 'program.status_changed')->where('entity_id', $program->id)->exists())->toBeTrue();
 });
 
+test('management can approve a program awaiting approval, matching the documented demo scenario', function () {
+    $management = User::factory()->create();
+    $management->assignRole(RoleEnum::Management->value);
+
+    $program = Program::factory()->create(['status' => ProgramStatus::PendingApproval]);
+
+    $this->actingAs($management)
+        ->patchJson("/api/v1/programs/{$program->id}/status", ['status' => ProgramStatus::Approved->value])
+        ->assertOk()
+        ->assertJsonPath('data.status', 'approved');
+});
+
 test('a program manager can enroll and unenroll a beneficiary', function () {
     $program = Program::factory()->create();
     $beneficiary = Beneficiary::factory()->create();

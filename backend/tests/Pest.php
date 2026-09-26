@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
 /*
@@ -16,6 +17,11 @@ use Tests\TestCase;
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
+    // RefreshDatabase rolls back each test's DB rows, but Spatie's permission
+    // registrar caches roles/permissions in a process-wide singleton that
+    // survives the rollback — without forgetting it, a test can see another
+    // test's (rolled-back) permission set depending on run order.
+    ->beforeEach(fn () => app(PermissionRegistrar::class)->forgetCachedPermissions())
     ->in('Feature');
 
 pest()->extend(TestCase::class)

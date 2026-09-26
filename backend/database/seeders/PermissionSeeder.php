@@ -81,6 +81,10 @@ class PermissionSeeder extends Seeder
             PermissionEnum::ViewAnyActivities,
             // Phase 7: Management is the oversight role for the Odoo Integration dashboard.
             PermissionEnum::ViewOdooStatus, PermissionEnum::RetryOdooSync,
+            // Phase 10: docs/implementation-plan.md §6's demo scenario 1 ("...
+            // Management approves...") was never actually wired to this role —
+            // found while writing the corresponding E2E spec.
+            PermissionEnum::UpdateProgramStatus,
         ],
     ];
 
